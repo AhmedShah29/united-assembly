@@ -1,0 +1,34 @@
+#ifndef LEXER_H
+#define LEXER_H
+
+#include <string.h>
+#include <ctype.h>
+
+typedef enum {
+    TOKEN_EOF = 0,
+    TOKEN_NLN, // new line token
+    TOKEN_ADD,
+    TOKEN_MOV,
+    TOKEN_SUB,
+    TOKEN_REG, // rigester token
+    TOKEN_COMMA,
+    TOKEN_ID
+} tokenType;
+
+typedef  struct {
+    tokenType type;
+    char orignalCodeLine[32]; // stores the oreginal code line
+    int line;
+} token;
+
+token* lexer(const char *source, size_t *outTokenCount);
+
+static inline tokenType getTokenEnum(const char *word) {
+    if(strcmp(word, "MOV") == 0) return TOKEN_MOV;
+    if(strcmp(word, "ADD") == 0) return TOKEN_ADD;
+    if(strcmp(word, "SUB") == 0) return TOKEN_SUB;
+    if(word[0] == 'R' && isdigit(word[1])) { return TOKEN_REG; } // checks if the starts with R and is 1 of the 9 rigesters
+    return TOKEN_ID; // returns it as a id if non of above
+}
+
+#endif
