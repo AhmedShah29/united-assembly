@@ -17,7 +17,7 @@ typedef enum {
 
 typedef  struct {
     tokenType type;
-    char orignalCodeLine[32]; // stores the oreginal code line
+    char value[32];
     int line;
 } token;
 

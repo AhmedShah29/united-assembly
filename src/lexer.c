@@ -48,8 +48,8 @@ token* lexer(const char *source, size_t *outTokenCount) {
 
                 if(tokenCount >= capacity) { capacity *= 2; tokens = realloc(tokens, capacity * sizeof(token)); }
                 tokens[tokenCount].type = getTokenEnum(word);
-                strncpy(tokens[tokenCount].orignalCodeLine, word, sizeof(tokens[tokenCount].orignalCodeLine) - 1);
-                tokens[tokenCount].orignalCodeLine[sizeof(tokens[tokenCount].orignalCodeLine) - 1] = '\0'; // null terminador thing (not BMPT)
+                strncpy(tokens[tokenCount].value, word, sizeof(tokens[tokenCount].value) - 1);
+                tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0'; // null terminador thing (not BMPT)
                 tokens[tokenCount].line = currentLine;
 
                 tokenCount++;
