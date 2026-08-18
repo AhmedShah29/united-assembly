@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 
-#define UsmError(format, ...) fprintf(stderr, "Error: " format "\n", #__VA_ARGS__)
+#define UsmError(format, ...) do { \
+    fprintf(stderr, "Error: " format "\n", ##__VA_ARGS__); \
+    exit(1); \
+} while(0)
 
 #endif
