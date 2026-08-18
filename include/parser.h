@@ -1,9 +1,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "lexer.h"
 #include <stdint.h>
 #include <stddef.h>
+#include "lexer.h"
 
 typedef enum {
     OPERAND_NONE,
@@ -26,6 +26,6 @@ typedef struct {
     int line;         
 } Instruction;
 
-Instruction* parse(const token *tokens, size_t tokenCount, size_t *outInstructionCount);
+Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructionCount);
 
 #endif
