@@ -1,6 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <stdint.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -12,13 +13,14 @@ typedef enum {
     TOKEN_SUB,
     TOKEN_REG, // rigester token
     TOKEN_COMMA,
-    TOKEN_ID
+    TOKEN_ID,
+    TOKEN_INT
 } tokenType;
 
 typedef  struct {
     tokenType type;
     char value[32];
-    int line;
+    uint32_t line;
 } token;
 
 token* lexer(const char *source, size_t *outTokenCount);
