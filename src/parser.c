@@ -5,12 +5,18 @@
 #include "include/error.h"
 #include "include/lexer.h"
 
+static inline int32_t parse_immediate(const char *immStr, int line) {
+    char *endPtr;
+    long immVal = strtol(immStr, &endPtr, 10);
+    if(endPtr == immStr || *endPtr != '\0') { UsmError("at line %d \n %s | is not a intger", line, immStr); }
+    return  (int32_t)immVal;
+}
 
-static uint8_t parse_register(const char *regStr, int line) {
+static inline uint8_t parse_register(const char *regStr, int line) {
     int regNum = -1;
 
-    if (regStr[0] != 'R' && regStr[0] != 'r') {
-        UsmError("At line %d \n %s \n expected a register using r or R", line, regStr);
+    if (regStr[0] != 'R') {
+        UsmError("At line %d \n %s | expected a register using R", line, regStr);
     } else {
         regNum = atoi(&regStr[1]);
         if (regNum < 0 || regNum > 9) {
@@ -30,40 +36,56 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
     uint32_t i = 0;
     
     while(i < tokenCount) {
-        if(tokens[i].type == TOKEN_NLN) { i++; continue; }
-        else if (tokens[i].type == TOKEN_EOF) { break; }
+
         
-        else if(tokens[i].type == TOKEN_MOV) {
-            Instruction instr;
-            instr.line = tokens[i].line;
-            instr.opcode = TOKEN_MOV;
-            i++;
+        switch (tokens[i].type) {
+            case TOKEN_NLN: i++; continue;
 
-            if (tokens[i].type == TOKEN_REG) {
-                instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
-                instr.dest.type = OPERAND_REG;
+            case TOKEN_ADD:
+            case TOKEN_SUB:
+            case TOKEN_MOV: {
+                Instruction instr;
+                instr.line = tokens[i].line;
+                instr.opcode = tokens[i].type;
                 i++;
-            } else { UsmError("at line %d expected a register", tokens[i].line); }
 
-            if(tokens[i].type == TOKEN_COMMA) { i++; } else { UsmError("at line %d expected a ',' ", tokens[i].line); }
+                if (tokens[i].type == TOKEN_REG) {
+                    instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
+                    instr.dest.type = OPERAND_REG;
+                    i++;
+                } else { UsmError("at line %d \n expected a register", tokens[i].line); }
 
-            if(tokens[i].type == TOKEN_REG) {
-                instr.src.type = OPERAND_REG;
-                instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
-                i++;
-            } else { UsmError("at line %d expected a register", tokens[i].line); }
+                if(tokens[i].type == TOKEN_COMMA) { i++; } else { UsmError("at line %d \n expected a ',' ", tokens[i].line); }
 
-            if(instrCount >= capacity) { 
-                capacity *= 2;
-                instructions = realloc(instructions, capacity * sizeof(Instruction));
-                if(instructions == NULL) { UsmError("unable to realloc memory for the instructions"); }
+                switch (tokens[i].type) {
+                    case TOKEN_REG: 
+                        instr.src.type = OPERAND_REG;
+                        instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
+                        i++;
+                        break;
+                    case TOKEN_INT:
+                        instr.src.type = OPERAND_IMM;
+                        instr.src.val.imm = parse_immediate(tokens[i].value, tokens[i].line);
+                        i++;
+                        break;
+                    default: UsmError("at line %d \n expected a register or immediate integer", tokens[i].line); 
+                }
+                
+                if(instrCount >= capacity) { 
+                    capacity *= 2;
+                    instructions = realloc(instructions, capacity * sizeof(Instruction));
+                    if(instructions == NULL) { UsmError("unable to realloc memory for the instructions"); }
+                }
+                instructions[instrCount] = instr;
+                instrCount++;
+                break;
             }
-            instructions[instrCount] = instr;
-            instrCount++;
+            case TOKEN_EOF: 
+                if (outInstructionCount != NULL) { *outInstructionCount = instrCount; }
+                return instructions;
+
+            default: UsmError("Uknown token at line %d", tokens[i].line); break;
         }
-        
-        else { UsmError("Uknown token at line %d", tokens[i].line); }
     }
-    if (outInstructionCount != NULL) { *outInstructionCount = instrCount; }
     return instructions;
 }
