@@ -4,16 +4,17 @@
 #include <string.h>
 #include <stdlib.h>
 #include "include/lexer.h"
+#include "include/error.h"
 
 token* lexer(const char *source, size_t *outTokenCount) {
     
     const char *currentIndex = source;
     int currentLine = 1;
     size_t capacity = strlen(source) / 2 + 8; // max size of the tokens array 
-    size_t tokenCount = 0;  // current array token size
+    size_t tokenCount = 0;  // current tokens array size
 
     token *tokens = malloc(capacity * sizeof(token));
-    if (tokens == NULL) { fprintf(stderr, "faild to allocate memory for the tokens"); exit(1); }
+    if (tokens == NULL) { UsmError("faild to allocate memory for the tokens"); }
     
     while(*currentIndex != '\0') {
         if (*currentIndex == ' ' || *currentIndex == '\t' || *currentIndex == '\r'){ currentIndex++; } /* skips spaces etc... */ 
@@ -28,7 +29,6 @@ token* lexer(const char *source, size_t *outTokenCount) {
             currentIndex++; 
             tokenCount++;
         }
-        
         else if(*currentIndex == ';') { 
             while (*currentIndex != '\n' && *currentIndex != '\0') { 
                 currentIndex++; 
