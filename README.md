@@ -1,6 +1,6 @@
 # United Assembly
 
-United Assembly is a project to unite most of the assembly features in a 1 language that transplies/compiles to that target choose of the devloper sutch as **x32 x64 x86 Intel/AMD CPUs** from the same United Assembly(usm) code
+United Assembly is a project to make a unite most of the assembly features in a 1 language that transplies/compiles to that target choose of the devloper sutch as **x32 x64 x86 Intel/AMD CPUs** from the same United Assembly(usm) code
 
 ## Target Architectures
 
@@ -59,4 +59,4 @@ Note about the x32 architectures:
 | :--- | :--- | :--- |
 | PUSH | `PUSH REG/IMM` | Pushes a value onto the top of the stack. |
 | POP | `POP REG` | Pops a value from the top of the stack and places it into the register. |
-| EXIT | `EXIT` / `EXIT REG/IMM` | Safely terminates program execution and returns an exit code to the OS. |
+| EXIT | `EXIT` | Safely terminates program execution using the exit code stored in R0. |
