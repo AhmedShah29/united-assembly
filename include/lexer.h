@@ -82,7 +82,7 @@ static inline tokenType getTokenEnum(const char *word) {
     /* Registers (R0 - R9) */
     if(word[0] == 'R' && isdigit(word[1])) { return TOKEN_REG; }
 
-    /* Default: Identifier */
+    /* Default Identifier */
     return TOKEN_ID; 
 }
 
