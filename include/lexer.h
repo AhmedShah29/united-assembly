@@ -12,6 +12,8 @@ typedef enum {
     TOKEN_COMMA,    // ,
     TOKEN_L_BRACK,  // [
     TOKEN_R_BRACK,  // ]
+    TOKEN_STRING,   // "string"
+    TOKEN_SECTION,  // .data .text ....
 
     /* Literals & Identifiers */
     TOKEN_INT,
@@ -24,9 +26,13 @@ typedef enum {
     TOKEN_LOAD,
     TOKEN_STR,
 
-    /* Opcodes: Arithmetic & Logical */
+    /* Opcodes: Arithmetic */
     TOKEN_ADD,
     TOKEN_SUB,
+    TOKEN_MUL,
+    TOKEN_DIV,
+
+    /* Opcodes: Logical */
     TOKEN_AND,
     TOKEN_OR,
     TOKEN_XOR,
@@ -59,9 +65,13 @@ static inline tokenType getTokenEnum(const char *word) {
     if(strcmp(word, "LOAD") == 0) return TOKEN_LOAD;
     if(strcmp(word, "STR") == 0) return TOKEN_STR;
 
-    /* Opcodes: Arithmetic & Logical */
+    /* Opcodes: Arithmetic */
     if(strcmp(word, "ADD") == 0) return TOKEN_ADD;
     if(strcmp(word, "SUB") == 0) return TOKEN_SUB;
+    if(strcmp(word, "MUL") == 0) return TOKEN_MUL;
+    if(strcmp(word, "DIV") == 0) return TOKEN_DIV;
+
+    /* Opcodes: Logical */
     if(strcmp(word, "AND") == 0) return TOKEN_AND;
     if(strcmp(word, "OR") == 0) return TOKEN_OR;
     if(strcmp(word, "XOR") == 0) return TOKEN_XOR;
