@@ -1,3 +1,5 @@
+.data
+    name "shah"
 START_LOOP:             ; comment
     MOV R0, -10         ; a test usm file to debug 
     LOAD R1, [R2]       ; the transpiler pipline 
