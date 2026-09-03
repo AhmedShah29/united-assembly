@@ -21,8 +21,10 @@ do { \
 
 
 // Debug function
-const char* tokenTypeToString(tokenType type) {
+static inline const char* tokenTypeToString(tokenType type) {
     switch(type) {
+        case TOKEN_STRING: return "TOKEN_STRING";
+        case TOKEN_SECTION: return "TOKEN_SECTION";
         case TOKEN_EOF: return "TOKEN_EOF";
         case TOKEN_NLN: return "TOKEN_NLN";
         case TOKEN_COMMA: return "TOKEN_COMMA";
