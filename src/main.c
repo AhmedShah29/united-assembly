@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     const char *fileName = argv[1]; // stores the file name need to be a pointer 
 
     FILE *file = fopen(fileName, "r");
-    if(!file) { UsmError("Error: cannot open file '%s'\n", fileName); }
+    if(!file) { UsmError("cannot open file '%s'\n", fileName); }
 
     fseek(file, 0, SEEK_END); // goes to the EOF
 
