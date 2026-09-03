@@ -19,77 +19,115 @@ token* lexer(const char *source, size_t *outTokenCount) {
     CheckMem(tokens, tokenCount, capacity, "Failed to allocate memory tokens array");
 
     while(*currentIndex != '\0') {
-        if (*currentIndex == ' ' || *currentIndex == '\t' || *currentIndex == '\r'){ currentIndex++; } /* skips spaces etc... */
-        else if(*currentIndex == '\n') {
-
-            CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
-
-            tokens[tokenCount].type = TOKEN_NLN;
-            tokens[tokenCount].value[0] = '\0';
-            tokens[tokenCount].line = currentLine;
-            
-            currentLine++;
-            currentIndex++;
-            tokenCount++;
-        }
-        else if(*currentIndex == ';') {
-            while (*currentIndex != '\n' && *currentIndex != '\0') {
+        switch(*currentIndex) {
+            case ' ':
+            case '\t':           /* skips spaces etc... */
+            case '\r':
                 currentIndex++;
-            }
-        }
-        else {
-            if(isalpha(*currentIndex) || *currentIndex == '_') {
-                char word[32];
-                int i = 0;
-
-                while((isalnum(*currentIndex) || *currentIndex == '_') && i < 31) {  // pravents the size overflaw
-                    word[i] = *currentIndex;
-                    i++;
-                    currentIndex++;
-                }
-                word[i] = '\0';
-
-                if(*currentIndex == ':') { tokens[tokenCount].type = TOKEN_LABEL; currentIndex++; }
-                else { tokens[tokenCount].type = getTokenEnum(word); }
-
-                CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
-
-
-                strncpy(tokens[tokenCount].value, word, sizeof(tokens[tokenCount].value) - 1);
-                tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
-                tokens[tokenCount].line = currentLine;
-                
-                tokenCount++;
-            } else if(isdigit(*currentIndex) || (*currentIndex == '-' && isdigit(*(currentIndex + 1)))) {
-                char num[32] = "";
-                uint8_t i = 0;
-                if(*currentIndex == '-') { num[i] = *currentIndex; currentIndex++; i++; }
-
-                while(isdigit(*currentIndex) && i < 31) { num[i] = *currentIndex++; i++; }
-                num[i] = '\0';
+                break;
+            case '\n':
                 
                 CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
-
-                tokens[tokenCount].type = TOKEN_INT;
-                strncpy(tokens[tokenCount].value, num, sizeof(tokens[tokenCount].value) - 1);
-                tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
-                tokens[tokenCount].line = currentLine;
-
-                tokenCount++;
-            } else if(*currentIndex == ',' || *currentIndex == '[' || *currentIndex == ']') {
-                CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
-
-                switch(*currentIndex) {
-                    case ',': tokens[tokenCount].type = TOKEN_COMMA; break;
-                    case '[': tokens[tokenCount].type = TOKEN_L_BRACK; break;
-                    case ']': tokens[tokenCount].type = TOKEN_R_BRACK; break;
-                }
+    
+                tokens[tokenCount].type = TOKEN_NLN;
                 tokens[tokenCount].value[0] = '\0';
                 tokens[tokenCount].line = currentLine;
-
-                tokenCount++;
+                
+                currentLine++;
                 currentIndex++;
-            } else { currentIndex++; } //temp
+                tokenCount++;
+                break;
+            case ';':
+                while (*currentIndex != '\n' && *currentIndex != '\0') { currentIndex++; }
+                break;
+            default: { 
+                if(isalpha(*currentIndex) || *currentIndex == '_') {
+                    char word[32];
+                    int i = 0;
+    
+                    while((isalnum(*currentIndex) || *currentIndex == '_') && i < 31) {  // pravents the size overflaw
+                        word[i] = *currentIndex;
+                        i++;
+                        currentIndex++;
+                    }
+                    word[i] = '\0';
+    
+                    if(*currentIndex == ':') { tokens[tokenCount].type = TOKEN_LABEL; currentIndex++; }
+                    else { tokens[tokenCount].type = getTokenEnum(word); }
+    
+                    CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
+    
+    
+                    strncpy(tokens[tokenCount].value, word, sizeof(tokens[tokenCount].value) - 1);
+                    tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
+                    tokens[tokenCount].line = currentLine;
+                    
+                    tokenCount++;
+                } else if(isdigit(*currentIndex) || (*currentIndex == '-' && isdigit(*(currentIndex + 1)))) {
+                    char num[32] = "";
+                    uint8_t i = 0;
+                    if(*currentIndex == '-') { num[i] = *currentIndex; currentIndex++; i++; }
+    
+                    while(isdigit(*currentIndex) && i < 31) { num[i] = *currentIndex++; i++; }
+                    num[i] = '\0';
+                    
+                    CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
+    
+                    tokens[tokenCount].type = TOKEN_INT;
+                    strncpy(tokens[tokenCount].value, num, sizeof(tokens[tokenCount].value) - 1);
+                    tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
+                    tokens[tokenCount].line = currentLine;
+    
+                    tokenCount++;
+                } else if(*currentIndex == ',' || *currentIndex == '[' || *currentIndex == ']') {
+                    CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
+    
+                    switch(*currentIndex) {
+                        case ',': tokens[tokenCount].type = TOKEN_COMMA; break;
+                        case '[': tokens[tokenCount].type = TOKEN_L_BRACK; break;
+                        case ']': tokens[tokenCount].type = TOKEN_R_BRACK; break;
+                    }
+                    tokens[tokenCount].value[0] = '\0';
+                    tokens[tokenCount].line = currentLine;
+    
+                    tokenCount++;
+                    currentIndex++;
+                } else if(*currentIndex == '.') {
+                    currentIndex++;
+                    
+                    char word[32] = "";
+                    uint8_t i = 0;
+
+                    while(isalpha(*currentIndex) && i < 31) { word[i] = *currentIndex++; i++; }
+                    word[i] = '\0';
+
+                    tokens[tokenCount].type = TOKEN_SECTION;
+                    strncpy(tokens[tokenCount].value, word, sizeof(tokens[tokenCount].value) - 1);
+                    tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
+                    tokens[tokenCount].line = currentLine;
+
+                    tokenCount++;
+                } else if(*currentIndex == '"') {
+                    currentIndex++;
+                    
+                    char word[32] = "";
+                    uint8_t i = 0;
+
+                    while(*currentIndex != '"' && *currentIndex != '\0') { word[i] = *currentIndex++; i++; }
+                    if(*currentIndex == '\0') { UsmError("at line %d\nunterminated string", currentLine); }
+                    currentIndex++;
+                    word[i] = '\0';
+
+                    tokens[tokenCount].type = TOKEN_STRING;
+                    strncpy(tokens[tokenCount].value, word, sizeof(tokens[tokenCount].value) - 1);
+                    tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
+                    tokens[tokenCount].line = currentLine;
+                    
+                    tokenCount++;
+                } else { 
+                    UsmError("at line %d\nunknown sybmol %c", currentLine, *currentIndex);
+                }
+            }
         }
     }
     CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
