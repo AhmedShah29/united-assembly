@@ -25,6 +25,8 @@ Note about the x32 architectures:
 | :--- | :--- | :--- |
 | ADD | `ADD REG, REG/IMM` | Adds the source value to the destination register and stores the result in the destination. |
 | SUB | `SUB REG, REG/IMM` | Subtracts the source value from the destination register and stores the result in the destination. |
+| MUL | `MUL REG, REG/IMM` | Multiplies the destination register by the source value and stores the result in the destination. |
+| DIV | `DIV REG, REG/IMM` | Divides the destination register by the source value and stores the quotient (result) in the destination. |
 
 ### Logical & Bitwise
 
@@ -39,8 +41,8 @@ Note about the x32 architectures:
 
 | Instruction | Syntax | Description |
 | :--- | :--- | :--- |
-| LOAD | `LOAD REG, [VAR]` | Loads the value from the memory address into the register. |
-| STR | `STR [VAR], REG` | Stores the value from the register into the memory address. |
+| LOAD | `LOAD [VAR], REG` | Loads the value from the memory address into the register. |
+| STR | `STR REG, [VAR]` | Stores the value from the register into the memory address. |
 
 ### Control Flow & Branching
 
