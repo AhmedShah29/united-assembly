@@ -1,0 +1,10 @@
+.data
+    name "someone"
+.text
+START_LOOP:             ; comment
+    MOV R0, -10         ; a test usm file to debug 
+    LOAD R1, [R2]       ; the transpiler pipline 
+    ADD R0, R1          ; and making sure its working fine
+    CMP R0, 0           ; also as a example to how usm code looks like
+    JINE START_LOOP     ; note: 
+EXIT                    ;       select the language as asm to hightlight the commands
