@@ -1,0 +1,9 @@
+# excuteable igonres
+*.exe
+
+# compiler ignore idk about ur config file
+.clangd
+compile_flags.txt
+
+# testing files
+test.usm
