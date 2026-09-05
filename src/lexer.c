@@ -16,7 +16,7 @@ token* lexer(const char *source, size_t *outTokenCount) {
     size_t tokenCount = 0;  // current tokens array size
 
     token *tokens = malloc(capacity * sizeof(token));
-    CheckMem(tokens, tokenCount, capacity, "Failed to allocate memory tokens array");
+    CheckMem(tokens, tokenCount, capacity, token, "Failed to reallocate memory for tokens array");
 
     while(*currentIndex != '\0') {
         switch(*currentIndex) {
@@ -27,7 +27,7 @@ token* lexer(const char *source, size_t *outTokenCount) {
                 break;
             case '\n':
                 
-                CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
+                CheckMem(tokens, tokenCount, capacity, token, "Failed to reallocate memory for tokens array");
     
                 tokens[tokenCount].type = TOKEN_NLN;
                 tokens[tokenCount].value[0] = '\0';
@@ -55,7 +55,7 @@ token* lexer(const char *source, size_t *outTokenCount) {
                     if(*currentIndex == ':') { tokens[tokenCount].type = TOKEN_LABEL; currentIndex++; }
                     else { tokens[tokenCount].type = getTokenEnum(word); }
     
-                    CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
+                    CheckMem(tokens, tokenCount, capacity, token, "Failed to reallocate memory for tokens array");
     
     
                     strncpy(tokens[tokenCount].value, word, sizeof(tokens[tokenCount].value) - 1);
@@ -71,7 +71,7 @@ token* lexer(const char *source, size_t *outTokenCount) {
                     while(isdigit(*currentIndex) && i < 31) { num[i] = *currentIndex++; i++; }
                     num[i] = '\0';
                     
-                    CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
+                    CheckMem(tokens, tokenCount, capacity, token, "Failed to reallocate memory for tokens array");
     
                     tokens[tokenCount].type = TOKEN_INT;
                     strncpy(tokens[tokenCount].value, num, sizeof(tokens[tokenCount].value) - 1);
@@ -80,7 +80,7 @@ token* lexer(const char *source, size_t *outTokenCount) {
     
                     tokenCount++;
                 } else if(*currentIndex == ',' || *currentIndex == '[' || *currentIndex == ']') {
-                    CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
+                    CheckMem(tokens, tokenCount, capacity, token, "Failed to reallocate memory for tokens array");
     
                     switch(*currentIndex) {
                         case ',': tokens[tokenCount].type = TOKEN_COMMA; break;
@@ -130,7 +130,7 @@ token* lexer(const char *source, size_t *outTokenCount) {
             }
         }
     }
-    CheckMem(tokens, tokenCount, capacity, "Failed to reallocate memory for tokens array");
+    CheckMem(tokens, tokenCount, capacity, token, "Failed to reallocate memory for tokens array");
 
     tokens[tokenCount].type = TOKEN_EOF;
     tokens[tokenCount].line = currentLine;
