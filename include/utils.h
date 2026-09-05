@@ -9,15 +9,15 @@
     reallocates it if needed a tharw a error if it faild
  */
 
-#define CheckMem(tokens, tokenCount, capacity, errorStr) \
+#define CheckMem(array, count, capacity, type, errorStr) \
 do { \
-    if((tokenCount) >= (capacity)) { \
+    if((count) >= (capacity)) { \
         (capacity) = ((capacity) == 0) ? 8 : (capacity) * 2; \
-       token *resizedMem = realloc((tokens), (capacity) * sizeof(token)); \
-       if(resizedMem == NULL) { UsmError(errorStr); } \
-       (tokens) = resizedMem; \
+        type *resizedMem = realloc((array), (capacity) * sizeof(type)); \
+        if(resizedMem == NULL) { UsmError(errorStr); } \
+        (array) = resizedMem; \
     } \
-} while (0) 
+} while (0)
 
 
 // Debug function
