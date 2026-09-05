@@ -1,6 +1,11 @@
 # United Assembly
 
-United Assembly is a project to make a unite most of the assembly features in a 1 language that transplies/compiles to that target choose of the devloper sutch as **x32 x64 x86 Intel/AMD CPUs** from the same United Assembly(usm) code
+United Assembly (USM) is an educational project designed to demystify the core concepts of Assembly language. Instead of getting bogged down by the complex, architecture-specific syntax of x86, ARM, or RISC-V, USM provides a unified and simplified syntax.
+
+### Project Goal
+
+The sole purpose of USM is to teach low-level programming fundamentals: **registers, memory, the stack, and control flow**. It bridges the gap between abstract concepts and real CPU architectures (x64, ARM, RISC-V).
+
 
 ## Target Architectures
 
@@ -37,7 +42,7 @@ Note about the x32 architectures:
 | XOR | `XOR REG, REG/IMM` | Performs a bitwise XOR operation. |
 
 ### Memory Access
-*(Uses `[ ]` for address)*
+**(Uses `[ ]` for address)**
 
 | Instruction | Syntax | Description |
 | :--- | :--- | :--- |
