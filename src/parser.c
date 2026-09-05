@@ -4,6 +4,7 @@
 #include "include/parser.h"
 #include "include/error.h"
 #include "include/lexer.h"
+#include "include/utils.h"
 
 static inline int32_t parse_immediate(const char *immStr, int line) {
     char *endPtr;
@@ -79,6 +80,86 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
                 instructions[instrCount] = instr;
                 instrCount++;
                 break;
+            }
+            case TOKEN_LOAD: {
+                Instruction instr;
+                instr.line = tokens[i].line;
+                instr.opcode = tokens[i].type;
+                i++;
+
+                if(tokens[i].type == TOKEN_L_BRACK) { i++; } else { UsmError("at line %d\n expected a '[' for a adress", tokens[i].line); }
+
+                switch(tokens[i].type) {
+                    case TOKEN_REG: 
+                        instr.dest.type = OPERAND_MEM;
+                        instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
+                        break;
+                    case TOKEN_ID:
+                        instr.dest.type = OPERAND_MEM;
+                        strcpy(instr.dest.val.name, tokens[i].value);
+                        break;
+                    default: UsmError("at line %d\nexpected a varible name or a rigester between [] \nexample: LOAD [VarName], REG", tokens[i].line); break;
+                }
+                i++;
+
+                if(tokens[i].type == TOKEN_R_BRACK) { i++; } else { UsmError("at line %d\nexpected a ']' symbol after REG/VAR name", tokens[i].line); }
+
+                if(tokens[i].type == TOKEN_COMMA) { i++; } else { UsmError("at line %d\nexpected a comma ',' after the address", tokens[i].line); }
+                if(tokens[i].type == TOKEN_REG) { 
+                    instr.src.type = OPERAND_REG;
+                    instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
+                    i++;
+                } else { UsmError("at line %d\nexpected a rigester to load the value in", tokens[i].line); }
+
+                CheckMem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
+
+                if(instrCount >= capacity) { 
+                    capacity *= 2;
+                    instructions = realloc(instructions, capacity * sizeof(Instruction));                   // temp untill the check mem function rewrite
+                    if(instructions == NULL) { UsmError("unable to realloc memory for the instructions"); }
+                }
+                
+                instructions[instrCount] = instr;
+                instrCount++;
+                break;
+            }
+            case TOKEN_STR: {
+                Instruction instr;
+                instr.line = tokens[i].line;
+                instr.opcode = tokens[i].type;
+                i++;
+
+                if(tokens[i].type == TOKEN_REG) { 
+                    instr.dest.type = OPERAND_REG;
+                    instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
+                    i++;
+                } else { UsmError("at line %d\nexpected a rigester  to store the value from", tokens[i].line); }
+
+                if(tokens[i].type == TOKEN_COMMA) { i++; } else { UsmError("at line %d\nexpected a comma ',' after the rigester", tokens[i].line); }
+
+                if(tokens[i].type == TOKEN_L_BRACK) { i++; } else { UsmError("at line %d\nexpected a '[' symbol", tokens[i].line); }
+                
+                switch (tokens[i].type) {
+                    case TOKEN_REG: 
+                        instr.src.type = OPERAND_MEM;
+                        instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
+                        break;
+                    case TOKEN_ID:
+                        instr.src.type = OPERAND_MEM;
+                        strcpy(instr.src.val.name, tokens[i].value);
+                        break;
+                    default: UsmError("at line %d\nexpected a varible name between [] \nexample: STR REG, [VarName]", tokens[i].line); break;
+                }
+                i++;
+
+                if(tokens[i].type == TOKEN_R_BRACK) { i++; } else { UsmError("at line %d\nexpected a ']'", tokens[i].line); }
+
+                CheckMem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
+                
+                instructions[instrCount] = instr;
+                instrCount++;
+                break;
+                
             }
             case TOKEN_EOF: 
                 if (outInstructionCount != NULL) { *outInstructionCount = instrCount; }
