@@ -8,14 +8,17 @@
 typedef enum {
     OPERAND_NONE,
     OPERAND_REG,
-    OPERAND_IMM  
+    OPERAND_IMM,
+    OPERAND_MEM,
+    OPERAND_LABEL
 } OperandType;
 
 typedef struct {
     OperandType type; 
     union { 
         uint8_t reg; 
-        int32_t imm; 
+        int32_t imm;
+        char name[32];
     } val;
 } Operand;
 
