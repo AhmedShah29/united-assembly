@@ -22,7 +22,7 @@ Note about the x32 architectures:
 
 | Instruction | Syntax | Description |
 | :--- | :--- | :--- |
-| MOV | `MOV REG, REG/IMM` | Copies the value from the source (register or immediate value) into the destination register. |
+| MOV | `MOV REG/IMM, REG` | Copies the value from the source (register or immediate value) into the destination register. |
 
 ### Arithmetic Operations
 
