@@ -125,7 +125,11 @@ token* lexer(const char *source, size_t *outTokenCount) {
                     
                     tokenCount++;
                 } else { 
-                    UsmError("at line %d\nunknown sybmol %c", currentLine, *currentIndex);
+
+                    // check other hidden char set up sometimes by the code editors
+                    if (isspace((unsigned char)*currentIndex) || iscntrl((unsigned char)*currentIndex)) { currentIndex++; break; }
+                    
+                    UsmError("at line %d\nunknown symbol '%c' (ASCII %d)", currentLine, *currentIndex, (unsigned char)*currentIndex);
                 }
             }
         }
