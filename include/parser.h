@@ -6,6 +6,12 @@
 #include "lexer.h"
 
 typedef enum {
+    SECTION_NONE = 0, // dont chnage dat 
+    SECTION_DATA,
+    SECTION_TEXT
+} SectionType;
+
+typedef enum {
     OPERAND_NONE,
     OPERAND_REG,
     OPERAND_IMM,
