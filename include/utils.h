@@ -50,6 +50,9 @@ static inline const char* tokenTypeToString(tokenType type) {
         case TOKEN_JIL: return "TOKEN_JIL";
         case TOKEN_PUSH: return "TOKEN_PUSH";
         case TOKEN_POP: return "TOKEN_POP";
+        case TOKEN_CALL: return "TOKEN_CALL";
+        case TOKEN_RET: return "TOKEN_RET";
+        case TOKEN_SYSCALL: return "TOKEN_SYSCALL";
         case TOKEN_EXIT: return "TOKEN_EXIT";
         default: return "UNKNOWN";
     }
