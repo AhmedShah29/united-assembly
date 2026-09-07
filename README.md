@@ -1,3 +1,5 @@
+![Debug Passed](https://img.shields.io/badge/Debug-Passed-brightgreen?style=for-the-badge&labelColor=000000&logo=bug&logoColor=white)
+
 # United Assembly
 
 United Assembly (USM) is an educational project designed to demystify the core concepts of Assembly language. Instead of getting bogged down by the complex, architecture-specific syntax of x86, ARM, or RISC-V, USM provides a unified and simplified syntax.
@@ -66,4 +68,7 @@ Note about the x32 architectures:
 | :--- | :--- | :--- |
 | PUSH | `PUSH REG/IMM` | Pushes a value onto the top of the stack. |
 | POP | `POP REG` | Pops a value from the top of the stack and places it into the register. |
+| CALL | `CALL LABEL` | Calls a function (pushes return address, jumps to label). |
+| RET | `RET` | Returns from a function (pops return address, jumps back). |
+| SYSCALL | `SYSCALL` | Invokes an OS system call (expects args in registers). |
 | EXIT | `EXIT` | Safely terminates program execution using the exit code stored in R0. |
