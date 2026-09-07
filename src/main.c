@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
     printf("\n--- USM Parser Debug ---\n");
         size_t instrCount = 0;
         Instruction *instructions = parser(tokens, tokenCount, &instrCount);
+        free(tokens);
         
         for (size_t i = 0; i < instrCount; i++) {
              printf("Line: %d | Opcode: %-6s | DestType: %d | SrcType: %d\n",
@@ -56,6 +57,5 @@ int main(int argc, char *argv[]) {
     
     // stops da mem leak during dev for now later will free da tokens after its parsered
     free(instructions);
-    free(tokens);
     return 0;
 }
