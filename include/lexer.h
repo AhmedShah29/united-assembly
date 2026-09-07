@@ -48,6 +48,9 @@ typedef enum {
     /* Opcodes: Stack & System */
     TOKEN_PUSH,
     TOKEN_POP,
+    TOKEN_CALL,
+    TOKEN_RET,
+    TOKEN_SYSCALL,
     TOKEN_EXIT
 } tokenType;
 
@@ -87,6 +90,9 @@ static inline tokenType getTokenEnum(const char *word) {
     /* Opcodes: Stack & System */
     if(strcmp(word, "PUSH") == 0) return TOKEN_PUSH;
     if(strcmp(word, "POP") == 0) return TOKEN_POP;
+    if(strcmp(word, "CALL") == 0) return TOKEN_CALL;
+    if(strcmp(word, "RET") == 0) return TOKEN_RET;
+    if(strcmp(word, "SYSCALL") == 0) return TOKEN_SYSCALL;
     if(strcmp(word, "EXIT") == 0) return TOKEN_EXIT;
 
     /* Registers (R0 - R9) */
