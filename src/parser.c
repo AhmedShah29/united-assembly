@@ -6,6 +6,7 @@
 #include "include/error.h"
 #include "include/lexer.h"
 #include "include/utils.h"
+#include "include/resolver.h"
 
 static inline int32_t parse_immediate(const char *immStr, int line) {
     char *endPtr;
@@ -42,7 +43,6 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
 
         
         switch (tokens[i].type) {
-            case TOKEN_LABEL:
             case TOKEN_NLN: i++; continue;
 
             case TOKEN_ADD:
@@ -91,6 +91,7 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
             case TOKEN_JIL:
             case TOKEN_JINE:
             case TOKEN_JIG:
+            case TOKEN_CALL:
             case TOKEN_JMP: {
                 if(CurrentSection != SECTION_TEXT) { UsmError("at line %d\ninstrctions must be in the text section\n help: add .text before your first command", tokens[i].line); }
                 Instruction instr;
@@ -320,6 +321,25 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
                 i++;
                 continue;
             }
+            case TOKEN_LABEL: {
+                if(CurrentSection != SECTION_TEXT) { UsmError("at line %d\ninstrctions must be in the text section\n help: add .text before your first command", tokens[i].line); }
+                Instruction instr;
+                instr.line = tokens[i].line;
+                instr.opcode = tokens[i].type;
+                instr.dest.type = OPERAND_NONE;
+                
+                instr.src.type = OPERAND_LABEL;
+                strcpy(instr.src.val.name, tokens[i].value);
+                i++;
+
+                CheckMem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
+                instructions[instrCount] = instr;
+                instrCount++;
+                
+                break;
+            }
+            case TOKEN_RET:
+            case TOKEN_SYSCALL:
             case TOKEN_EXIT: { 
                 if(CurrentSection != SECTION_TEXT) { UsmError("at line %d\ninstrctions must be in the text section\n help: add .text before your first command", tokens[i].line); }
                 Instruction instr;
@@ -339,10 +359,11 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
             }
             case TOKEN_EOF: 
                 if (outInstructionCount != NULL) { *outInstructionCount = instrCount; }
+                Resolver(instructions, instrCount);
                 return instructions;
 
             default: UsmError("Uknown token at line %d\nToken: %d", tokens[i].line, tokens[i].type); break;
         }
-    }
+    }    
     return instructions;
 }
