@@ -113,7 +113,7 @@ token* lexer(const char *source, size_t *outTokenCount) {
                     char word[32] = "";
                     uint8_t i = 0;
 
-                    while(*currentIndex != '"' && *currentIndex != '\0') { word[i] = *currentIndex++; i++; }
+                    while(*currentIndex != '"' && *currentIndex != '\0' && i < 31) { word[i] = *currentIndex++; i++; }
                     if(*currentIndex == '\0') { UsmError("at line %d\nunterminated string", currentLine); }
                     currentIndex++;
                     word[i] = '\0';
