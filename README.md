@@ -1,4 +1,4 @@
-![Debug Passed](https://img.shields.io/badge/Debug-Passed-brightgreen?style=for-the-badge&labelColor=000000&logo=bug&logoColor=white)
+![Debug Failed](https://img.shields.io/badge/Debug-Failed-red?style=for-the-badge&labelColor=000000&logo=bug&logoColor=white)
 
 # United Assembly
 
