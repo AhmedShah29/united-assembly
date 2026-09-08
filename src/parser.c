@@ -165,7 +165,7 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
 
                 switch(tokens[i].type) {
                     case TOKEN_REG: 
-                        instr.dest.type = OPERAND_MEM;
+                        instr.dest.type = OPERAND_REG;
                         instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
                         break;
                     case TOKEN_ID:
@@ -210,7 +210,7 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
                 
                 switch (tokens[i].type) {
                     case TOKEN_REG: 
-                        instr.src.type = OPERAND_MEM;
+                        instr.src.type = OPERAND_REG;
                         instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
                         break;
                     case TOKEN_ID:
