@@ -5,6 +5,7 @@
 #include "include/parser.h"
 #include "include/error.h"
 #include "include/utils.h"
+#include "include/codegen.h"
 
 int main(int argc, char *argv[]) {
 
@@ -54,6 +55,8 @@ int main(int argc, char *argv[]) {
                 instructions[i].src.type
             );
          }
+
+        GenrateCode(instructions, instrCount, "output.asm", OS_WINDOWS);
     
     // stops da mem leak during dev for now later will free da tokens after its parsered
     free(instructions);
