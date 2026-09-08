@@ -7,3 +7,6 @@ compile_flags.txt
 
 # testing files
 test.usm
+*.asm
+*.s
+*.o
