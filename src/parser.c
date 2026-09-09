@@ -37,7 +37,7 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
     if(instructions == NULL) { UsmError("unable to allocate memory for the instructions"); }
 
     uint32_t i = 0;
-    SectionType CurrentSection = SECTION_NONE; // section gaurd var
+    SectionType CurrentSection = SECTION_NONE; // section gaurd
     
     while(i < tokenCount) {
 
@@ -169,7 +169,7 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
                         instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
                         break;
                     case TOKEN_ID:
-                        instr.dest.type = OPERAND_MEM;
+                        instr.dest.type = OPERAND_VAR;
                         strcpy(instr.dest.val.name, tokens[i].value);
                         break;
                     default: UsmError("at line %d\nexpected a varible name or a rigester between [] \nexample: LOAD [VarName], REG", tokens[i].line); break;
@@ -214,7 +214,7 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
                         instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
                         break;
                     case TOKEN_ID:
-                        instr.src.type = OPERAND_MEM;
+                        instr.src.type = OPERAND_VAR;
                         strcpy(instr.src.val.name, tokens[i].value);
                         break;
                     default: UsmError("at line %d\nexpected a varible name between [] \nexample: STR REG, [VarName]", tokens[i].line); break;
@@ -287,14 +287,14 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
                 Instruction instr;
                 instr.opcode = tokens[i].type;
                 instr.line = tokens[i].line;
-                instr.src.type = OPERAND_MEM;
+                instr.src.type = OPERAND_VAR;
                 strcpy(instr.src.val.name, tokens[i].value);
 
                 i++;
 
                 switch(tokens[i].type){
                     case TOKEN_STRING:
-                        instr.dest.type = OPERAND_MEM;
+                        instr.dest.type = OPERAND_VAR;
                         strcpy(instr.dest.val.name, tokens[i].value);
                         break;
                     case TOKEN_INT:
@@ -314,12 +314,28 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
                 
             }
             case TOKEN_SECTION: {
+                Instruction instr;
+                instr.opcode = TOKEN_SECTION;
+                instr.src.type = OPERAND_LABEL;
+                instr.line = tokens[i].line;
+                instr.src.type = OPERAND_LABEL;
+                instr.dest.type = OPERAND_NONE;
+                
+                if(strcmp(tokens[i].value, "data") == 0) {
+                    CurrentSection = SECTION_DATA;
+                    strcpy(instr.src.val.name, tokens[i].value);
+                } else  if(strcmp(tokens[i].value, "text") == 0) {
+                    CurrentSection = SECTION_TEXT;
+                    strcpy(instr.src.val.name, tokens[i].value);
+                } else { UsmError("at line %d\nuknown section '.%s'\n Usm have .data & .text sections only", tokens[i].line, tokens[i].value); }
 
-                if(strcmp(tokens[i].value, "data") == 0) { CurrentSection = SECTION_DATA; }
-                else  if(strcmp(tokens[i].value, "text") == 0) { CurrentSection = SECTION_TEXT; }
-                else { UsmError("at line %d\nuknown section '.%s'\n Usm have .data & .text sections only", tokens[i].line, tokens[i].value); }
                 i++;
-                continue;
+                
+                CheckMem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
+                instructions[instrCount] = instr;
+                instrCount++;
+                
+                break;
             }
             case TOKEN_LABEL: {
                 if(CurrentSection != SECTION_TEXT) { UsmError("at line %d\ninstrctions must be in the text section\n help: add .text before your first command", tokens[i].line); }
