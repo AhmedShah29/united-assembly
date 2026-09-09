@@ -1,4 +1,4 @@
-![Debug Failed](https://img.shields.io/badge/Debug-Failed-red?style=for-the-badge&labelColor=000000&logo=bug&logoColor=white)
+![Testing Failed](https://img.shields.io/badge/Testing-Failed-red?style=for-the-badge&labelColor=000000&logo=bug&logoColor=white)
 
 # United Assembly
 
@@ -11,12 +11,17 @@ The sole purpose of USM is to teach low-level programming fundamentals: **regist
 
 ## Target Architectures
 
-Note about the x32 architectures:
-> Due to usm having a 10 rigesters and some of the x32 CPUs dont have 10 rigesters usm Supports:
+**Note about the x32 architectures:**
+Due to usm having a 10 rigesters and some of the x32 CPUs dont have 10 rigesters usm Supports:
 
-- **x64(AMD/Intel 64-bit)**
+### Work in Progress
+
+- **x86_64(AMD/Intel 64-bit)**
+
+### Coming
+
 - **ARM64/32**
-- **RISC-V 64/32** (as a future mybe)
+- **RISC-V 64/32**
   
 ## Instruction Set Reference (ISR)
 
