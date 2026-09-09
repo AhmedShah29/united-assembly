@@ -31,32 +31,13 @@ int main(int argc, char *argv[]) {
     token *tokens = lexer(buffer, &tokenCount);
     free(buffer);
 
-    //lexer debug
-    printf("--- USM Lexer Debug ---\n");
-        for (size_t i = 0; i < tokenCount; i++) {
-            printf("Line: %u | Type: %-12s | Value: '%s'\n" 
-                ,tokens[i].line
-                ,tokenTypeToString(tokens[i].type)              // I feel like a rust dev making this but its more readable 
-                ,tokens[i].value
-            );
-        }
+    size_t instrCount = 0;
+    Instruction *instructions = parser(tokens, tokenCount, &instrCount);
+    free(tokens);
 
-    // pasrser debug
-    printf("\n--- USM Parser Debug ---\n");
-        size_t instrCount = 0;
-        Instruction *instructions = parser(tokens, tokenCount, &instrCount);
-        free(tokens);
-        
-        for (size_t i = 0; i < instrCount; i++) {
-             printf("Line: %d | Opcode: %-6s | DestType: %d | SrcType: %d\n",
-                instructions[i].line,
-                tokenTypeToString(instructions[i].opcode),
-                instructions[i].dest.type,
-                instructions[i].src.type
-            );
-         }
+    debug_lexer_parser(instructions, instrCount, tokens, tokenCount);
 
-        GenrateCode(instructions, instrCount, "output.asm", OS_WINDOWS);
+    GenrateCode(instructions, instrCount, "output.asm", OS_WINDOWS);
     
     // stops da mem leak during dev for now later will free da tokens after its parsered
     free(instructions);
