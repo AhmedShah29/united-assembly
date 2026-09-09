@@ -11,13 +11,16 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
     
     fprintf(out, "section .data\n");
     for(size_t i = 0; i < instrCount; i++) {
+
+        if(instrctions[i].opcode == TOKEN_SECTION && strcmp(instrctions[i].src.val.name, "text") == 0) { break; }
+        
         if(instrctions[i].opcode == TOKEN_ID) {
             fprintf(out, "    %s ", instrctions[i].src.val.name);
             switch(instrctions[i].dest.type){
                 case OPERAND_IMM:
                     fprintf(out, "dq %d\n", instrctions[i].dest.val.imm);
                     break;
-                case OPERAND_MEM:
+                case OPERAND_VAR:
                     fprintf(out, "db \"%s\", 0\n", instrctions[i].dest.val.name);
             }
         }
@@ -101,7 +104,7 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
                 case OPERAND_REG:
                     fprintf(out, "[%s]\n", x86_regs[instrctions[i].dest.val.reg]);
                     break;
-                case OPERAND_MEM:
+                case OPERAND_VAR:
                     fprintf(out, "[%s]\n", instrctions[i].dest.val.name);
                     break;
             }
@@ -113,7 +116,7 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
                 case OPERAND_REG:
                     fprintf(out, "[%s], ", x86_regs[instrctions[i].src.val.reg]);
                     break;
-                case OPERAND_MEM:
+                case OPERAND_VAR:
                     fprintf(out, "[%s], ", instrctions[i].src.val.name);
                 break;
             }
