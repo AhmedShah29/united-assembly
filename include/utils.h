@@ -3,6 +3,8 @@
 
 #include "include/lexer.h"
 #include "include/error.h"
+#include "include/parser.h"
+#include <stddef.h>
 
 /*
     a macro that checks the capacity 
@@ -55,6 +57,29 @@ static inline const char* tokenTypeToString(tokenType type) {
         case TOKEN_SYSCALL: return "TOKEN_SYSCALL";
         case TOKEN_EXIT: return "TOKEN_EXIT";
         default: return "UNKNOWN";
+    }
+}
+
+void debug_lexer_parser(Instruction *instructions,  size_t instrCount, token *tokens, size_t tokenCount) {
+    printf("--- USM Lexer Debug ---\n");
+    
+    for (size_t i = 0; i < tokenCount; i++) {
+         printf("Line: %u | Type: %-12s | Value: '%s'\n" 
+            ,tokens[i].line
+            ,tokenTypeToString(tokens[i].type)
+            ,tokens[i].value
+        );
+    }
+
+    printf("\n--- USM Parser Debug ---\n");
+        
+    for (size_t i = 0; i < instrCount; i++) {
+        printf("Line: %d | Opcode: %-6s | DestType: %d | SrcType: %d\n",
+            instructions[i].line,
+            tokenTypeToString(instructions[i].opcode),
+            instructions[i].dest.type,
+            instructions[i].src.type
+        );
     }
 }
 
