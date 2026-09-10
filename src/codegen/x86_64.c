@@ -1,10 +1,11 @@
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include "include/lexer.h"
 #include "include/parser.h"
 #include "include/codegen.h"
 
-static const char *x86_regs[] = { "rax", "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11", "r12" };
+static const char *x86_regs[] = { "rax", "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11", "r12", "rsp" };
 
 void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount, targetOS targetArch) {
     fprintf(out, "; Genrated by USM compiler pre-alfa\n\n");
