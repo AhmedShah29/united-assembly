@@ -18,12 +18,14 @@ static inline int32_t parse_immediate(const char *immStr, int line) {
 static inline uint8_t parse_register(const char *regStr, int line) {
     int regNum = -1;
 
+    if(strcmp(regStr, "RSP") == 0) { return 10; }
+
     if (regStr[0] != 'R') {
         UsmError("At line %d \n %s | expected a register using R", line, regStr);
     } else {
         regNum = atoi(&regStr[1]);
         if (regNum < 0 || regNum > 9) {
-            UsmError("At line %d \n Usm supports 10 registers from 0 - 9", line);
+            UsmError("At line %d \n Usm supports 10 registers from 0 - 9 and a stack register 'RSP' only", line);
         }
     }
     return (uint8_t)regNum;
@@ -318,7 +320,6 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
                 instr.opcode = TOKEN_SECTION;
                 instr.src.type = OPERAND_LABEL;
                 instr.line = tokens[i].line;
-                instr.src.type = OPERAND_LABEL;
                 instr.dest.type = OPERAND_NONE;
                 
                 if(strcmp(tokens[i].value, "data") == 0) {
