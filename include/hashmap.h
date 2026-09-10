@@ -6,9 +6,15 @@
 #include <stdbool.h>
 #include <string.h>
 
+typedef enum {
+    TYPE_VAR,
+    TYPE_LABEL
+} ItemType;
+
 typedef struct {
     char name[64];
     bool isEmpty;
+    ItemType kind;
     uint32_t sourceIndex;
     uint16_t nameLen;
 } MapItem;
@@ -32,22 +38,25 @@ static inline void HashMap_init(HashMap *map) {
     }
 }
 
-static inline void HashMap_insert(HashMap *map, const char *name, uint32_t sourceIndex) {
+static inline void HashMap_insert(HashMap *map, const char *name, uint32_t sourceIndex, ItemType kind) {
     uint16_t index = hash_string(name) & (HASHMAP_SIZE - 1);
 
     while (map->items[index].isEmpty == false) {index = (index + 1) & (HASHMAP_SIZE - 1); }
 
     map->items[index].sourceIndex = sourceIndex;
     map->items[index].isEmpty = false;
+    map->items[index].kind = kind;
     map->items[index].nameLen = (uint16_t)strlen(name);
     strcpy(map->items[index].name, name);
 }
 
-static inline uint32_t HashMap_get(HashMap *map, const char *name) {
+static inline uint32_t HashMap_get(HashMap *map, const char *name, ItemType kind) {
     uint16_t targetLen = strlen(name);
     uint32_t index = hash_string(name) & (HASHMAP_SIZE - 1);
 
     while(map->items[index].isEmpty == false){
+
+        if(map->items[index].kind != kind) { index = (index + 1) & (HASHMAP_SIZE - 1); continue; }
 
         if(map->items[index].nameLen != targetLen) { index = (index + 1) & (HASHMAP_SIZE - 1); continue; }
         
