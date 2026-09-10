@@ -60,7 +60,7 @@ static inline const char* tokenTypeToString(tokenType type) {
     }
 }
 
-void debug_lexer_parser(Instruction *instructions,  size_t instrCount, token *tokens, size_t tokenCount) {
+static void debug_lexer_parser(Instruction *instructions,  size_t instrCount, token *tokens, size_t tokenCount) {
     printf("--- USM Lexer Debug ---\n");
     
     for (size_t i = 0; i < tokenCount; i++) {
