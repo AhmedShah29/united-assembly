@@ -53,6 +53,8 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
             case TOKEN_AND:
             case TOKEN_OR:
             case TOKEN_XOR:
+            case TOKEN_SHL:
+            case TOKEN_SHR:
             case TOKEN_MOV:{
                 const char *cmd = "";
                 switch (instrctions[i].opcode) {            // deremens the instruction and wirte it (keep it DRY ladz)
@@ -64,6 +66,8 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
                     case TOKEN_OR:  cmd = "or";  break;
                     case TOKEN_XOR: cmd = "xor"; break;
                     case TOKEN_CMP: cmd = "cmp"; break;
+                    case TOKEN_SHL: cmd = "shl"; break;
+                    case TOKEN_SHR: cmd = "shr"; break;
                     default: break;
                 }
                 
@@ -185,6 +189,10 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
                }
                break;
         }
+        case TOKEN_NOT: 
+            fprintf(out, "    not %s\n", x86_regs[instrctions[i].dest.val.reg]);
+            break;
+            
             default: break;
         }
     }
