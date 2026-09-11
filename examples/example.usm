@@ -1,0 +1,44 @@
+.data
+    val1 10
+    val2 20
+
+.text
+main:
+    ; 1. Allocate 40 bytes (32 for Shadow Space + 8 for 16-byte alignment)
+    SUB RSP, 40
+
+    MOV 10, R0
+    MOV 20, R1
+    ADD R0, R1
+    MOV 2, R2
+    SHL R2, 3
+    NOT R2
+    STR R1, [val1]
+    LOAD [val1], R3
+    
+    ; 2. Explicitly compare R3 with 30 before the conditional jump
+    CMP R3, 30
+    JIE check_func
+    JMP exit_fail
+
+check_func:
+    CALL my_func
+    ; 3. Unconditional jump after CALL to proceed to success
+    JMP exit_success
+
+exit_success:
+    MOV 0, R0       ; Exit code 0 (Success)
+    JMP do_exit
+
+exit_fail:
+    MOV 1, R0       ; Exit code 1 (Failure)
+
+do_exit:
+    ; 4. CRITICAL: Do NOT restore RSP here. ExitProcess requires the shadow space.
+    EXIT
+
+my_func:
+    ; Leaf function: no stack allocation needed since it doesn't call other functions
+    MOV 100, R0
+    MOV R0, R1
+    RET
