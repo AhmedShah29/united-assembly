@@ -45,6 +45,11 @@ typedef enum {
     TOKEN_JIG,
     TOKEN_JIL,
 
+    /* Opcodes: bitwise */
+    TOKEN_SHL,
+    TOKEN_SHR,
+    TOKEN_NOT,
+
     /* Opcodes: Stack & System */
     TOKEN_PUSH,
     TOKEN_POP,
@@ -95,7 +100,12 @@ static inline tokenType getTokenEnum(const char *word) {
     if(strcmp(word, "SYSCALL") == 0) return TOKEN_SYSCALL;
     if(strcmp(word, "EXIT") == 0) return TOKEN_EXIT;
 
-    /* Registers (R0 - R9) */
+    /* Opcodes: bitwise */
+    if(strcmp(word, "SHL") == 0) return TOKEN_SHL;
+    if(strcmp(word, "SHR") == 0) return TOKEN_SHR;
+    if(strcmp(word, "NOT") == 0) return TOKEN_NOT;
+
+    /* Registers (R0 - R9) & stack rigester */
     if(word[0] == 'R' && isdigit(word[1])) { return TOKEN_REG; }
     if(strcmp(word, "RSP") == 0) { return TOKEN_REG; }
 
