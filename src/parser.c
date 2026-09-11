@@ -54,6 +54,8 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
             case TOKEN_AND:
             case TOKEN_OR:
             case TOKEN_XOR:
+            case TOKEN_SHL:
+            case TOKEN_SHR:
             case TOKEN_CMP: {
                 if(CurrentSection != SECTION_TEXT) { UsmError("at line %d\ninstrctions must be in the text section\n help: add .text before your first command", tokens[i].line); }
                 Instruction instr;
@@ -374,6 +376,34 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
                 
                 break;
             }
+            case TOKEN_NOT: { 
+                if(CurrentSection != SECTION_TEXT) { UsmError("at line %d\ninstrctions must be in the text section\n help: add .text before your first command", tokens[i].line); }
+                Instruction instr;
+                instr.line = tokens[i].line;
+                instr.opcode = TOKEN_NOT;
+                instr.src.type = OPERAND_NONE;
+
+                i++;
+
+                switch(tokens[i].type) {
+                    case TOKEN_REG:
+                        instr.dest.type = OPERAND_REG;
+                        instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
+                        break;
+                    default:
+                        UsmError("at line %d\n expected a rigester\n    example: NOT REG", tokens[i].line);
+                        break;
+                }
+
+                i++;
+
+                CheckMem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
+
+                instructions[instrCount] = instr;
+                instrCount++;
+                
+                break;
+            }
             case TOKEN_EOF: 
                 if (outInstructionCount != NULL) { *outInstructionCount = instrCount; }
                 Resolver(instructions, instrCount);
@@ -381,6 +411,6 @@ Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructi
 
             default: UsmError("Uknown token at line %d\nToken: %d", tokens[i].line, tokens[i].type); break;
         }
-    }    
+    }
     return instructions;
 }
