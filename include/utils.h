@@ -56,6 +56,9 @@ static inline const char* tokenTypeToString(tokenType type) {
         case TOKEN_RET: return "TOKEN_RET";
         case TOKEN_SYSCALL: return "TOKEN_SYSCALL";
         case TOKEN_EXIT: return "TOKEN_EXIT";
+        case TOKEN_SHL: return "TOKEN_SHL";
+        case TOKEN_SHR: return  "TOKEN_SHR";
+        case TOKEN_NOT: return "TOKEN_NOT";
         default: return "UNKNOWN";
     }
 }
