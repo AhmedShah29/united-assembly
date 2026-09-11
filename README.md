@@ -1,4 +1,4 @@
-![Testing Failed](https://img.shields.io/badge/Testing-Failed-red?style=for-the-badge&labelColor=000000&logo=bug&logoColor=white)
+![Testing Succeed](https://img.shields.io/badge/Testing-Succeed-brightgreen?style=for-the-badge&labelColor=000000&logo=check-circle&logoColor=white)
 
 # United Assembly
 
@@ -25,11 +25,14 @@ Due to usm having a 10 rigesters and some of the x32 CPUs dont have 10 rigesters
   
 ## Instruction Set Reference (ISR)
 
-### Data Movement
+### Data Movement & Memory Access
+**(Uses `[ ]` for address)**
 
 | Instruction | Syntax | Description |
 | :--- | :--- | :--- |
 | MOV | `MOV REG/IMM, REG` | Copies the value from the source (register or immediate value) into the destination register. |
+| LOAD | `LOAD [VAR], REG` | Loads the value from the memory address into the register. |
+| STR | `STR REG, [VAR]` | Stores the value from the register into the memory address. |
 
 ### Arithmetic Operations
 
@@ -47,14 +50,9 @@ Due to usm having a 10 rigesters and some of the x32 CPUs dont have 10 rigesters
 | AND | `AND REG, REG/IMM` | Performs a bitwise AND operation. |
 | OR | `OR REG, REG/IMM` | Performs a bitwise OR operation. |
 | XOR | `XOR REG, REG/IMM` | Performs a bitwise XOR operation. |
-
-### Memory Access
-**(Uses `[ ]` for address)**
-
-| Instruction | Syntax | Description |
-| :--- | :--- | :--- |
-| LOAD | `LOAD [VAR], REG` | Loads the value from the memory address into the register. |
-| STR | `STR REG, [VAR]` | Stores the value from the register into the memory address. |
+| SHL | `SHL REG, REG/IMM` | Shifts the bits of the register to the left. |
+| SHR | `SHR REG, REG/IMM` | Shifts the bits of the register to the right. |
+| NOT | `NOT REG` | Performs a bitwise NOT (inversion) on the register. |
 
 ### Control Flow & Branching
 
