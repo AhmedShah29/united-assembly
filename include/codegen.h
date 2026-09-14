@@ -8,11 +8,11 @@
 typedef enum {
     OS_WINDOWS,
     OS_UNIX
-} targetOS;
+} TargetOS;
 
-void GenrateCode(const Instruction *instructions, const size_t instrCount, const char *outFilePath, targetOS targetArch);
+void GenerateCode(const Instruction *instructions, const size_t instrCount, const char *outFilePath, TargetOS targetArch);
 
-void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount, targetOS targetArch);
+void GenX86_64(FILE *out, const Instruction *instrctions, size_t instrCount, TargetOS targetArch);
 
 
 #endif

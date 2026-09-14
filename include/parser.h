@@ -31,12 +31,12 @@ typedef struct {
 } Operand;
 
 typedef struct {
-    tokenType opcode; 
+    TokenType opcode; 
     Operand dest;     
     Operand src;      
     int line;         
 } Instruction;
 
-Instruction* parser(const token *tokens, size_t tokenCount, size_t *outInstructionCount);
+Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructionCount);
 
 #endif

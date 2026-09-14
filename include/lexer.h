@@ -57,17 +57,17 @@ typedef enum {
     TOKEN_RET,
     TOKEN_SYSCALL,
     TOKEN_EXIT
-} tokenType;
+} TokenType;
 
 typedef  struct {
-    tokenType type;
+    TokenType type;
     uint32_t line;
     char value[32];
-} token;
+} Token;
 
-token* lexer(const char *source, size_t *outTokenCount);
+Token* Lexer(const char *source, size_t *outTokenCount);
 
-static inline tokenType getTokenEnum(const char *word) {
+static inline TokenType get_token_enum(const char *word) {
     /* Opcodes: Data Movement & Memory */
     if(strcmp(word, "MOV") == 0) return TOKEN_MOV;
     if(strcmp(word, "LOAD") == 0) return TOKEN_LOAD;

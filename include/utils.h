@@ -1,17 +1,17 @@
 #ifndef UTILS
 #define UTILS
 
+#include <stdlib.h>
 #include "include/lexer.h"
 #include "include/error.h"
 #include "include/parser.h"
-#include <stddef.h>
 
 /*
     a macro that checks the capacity 
     reallocates it if needed a tharw a error if it faild
  */
 
-#define CheckMem(array, count, capacity, type, errorStr) \
+#define check_mem(array, count, capacity, type, errorMsg) \
 do { \
     if((count) >= (capacity)) { \
         (capacity) = ((capacity) == 0) ? 8 : (capacity) * 2; \
@@ -23,7 +23,7 @@ do { \
 
 
 // Debug function
-static inline const char* tokenTypeToString(tokenType type) {
+static inline const char* token_type_to_string(TokenType type) {
     switch(type) {
         case TOKEN_STRING: return "TOKEN_STRING";
         case TOKEN_SECTION: return "TOKEN_SECTION";
@@ -63,13 +63,13 @@ static inline const char* tokenTypeToString(tokenType type) {
     }
 }
 
-static void debug_lexer_parser(Instruction *instructions,  size_t instrCount, token *tokens, size_t tokenCount) {
+static void debug_lexer_parser(Instruction *instructions,  size_t instrCount, Token *tokens, size_t tokenCount) {
     printf("--- USM Lexer Debug ---\n");
     
     for (size_t i = 0; i < tokenCount; i++) {
          printf("Line: %u | Type: %-12s | Value: '%s'\n" 
             ,tokens[i].line
-            ,tokenTypeToString(tokens[i].type)
+            ,token_type_to_string(tokens[i].type)
             ,tokens[i].value
         );
     }
@@ -79,7 +79,7 @@ static void debug_lexer_parser(Instruction *instructions,  size_t instrCount, to
     for (size_t i = 0; i < instrCount; i++) {
         printf("Line: %d | Opcode: %-6s | DestType: %d | SrcType: %d\n",
             instructions[i].line,
-            tokenTypeToString(instructions[i].opcode),
+            token_type_to_string(instructions[i].opcode),
             instructions[i].dest.type,
             instructions[i].src.type
         );
