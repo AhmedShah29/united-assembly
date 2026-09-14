@@ -17,29 +17,29 @@ int main(int argc, char *argv[]) {
 
     fseek(file, 0, SEEK_END); // goes to the EOF
 
-    long file_size = ftell(file); // stores the source file size 
-    rewind(file); // sets the cursor back to the srats of the file
+    long fileSize = ftell(file); // stores the source file size 
+    rewind(file); // sets the cursor back to the start of the file
 
-    char *buffer = malloc(file_size + 1);
+    char *buffer = malloc(fileSize + 1);
     if(buffer == NULL) { UsmError("cant allocates memory to compile"); }
 
-    fread(buffer, sizeof(char), file_size, file);
-    buffer[file_size] = '\0';
+    fread(buffer, sizeof(char), fileSize, file);
+    buffer[fileSize] = '\0';
     fclose(file); // closes the file
 
     size_t tokenCount = 0;
-    token *tokens = lexer(buffer, &tokenCount);
+    Token *tokens = Lexer(buffer, &tokenCount);
     free(buffer);
 
     size_t instrCount = 0;
-    Instruction *instructions = parser(tokens, tokenCount, &instrCount);
+    Instruction *instructions = Parser(tokens, tokenCount, &instrCount);
     free(tokens);
 
     debug_lexer_parser(instructions, instrCount, tokens, tokenCount);
 
-    GenrateCode(instructions, instrCount, "output.asm", OS_WINDOWS);
+    GenerateCode(instructions, instrCount, "output.asm", OS_WINDOWS);
     
-    // stops da mem leak during dev for now later will free da tokens after its parsered
+    // stops the memory leak during dev for now later will free da tokens after its parsed
     free(instructions);
     return 0;
 }

@@ -3,11 +3,11 @@
 #include "include/codegen.h"
 #include "include/error.h"
 
-void GenrateCode(const Instruction *instructions, const size_t instrCount, const char *outFilePath, targetOS targetArch) {
+void GenerateCode(const Instruction *instructions, const size_t instrCount, const char *outFilePath, TargetOS targetArch) {
     FILE *outFile = fopen(outFilePath, "w");
     if(!outFile) { UsmError("cannot write file"); }
 
-    codegen_x86_64(outFile, instructions, instrCount, targetArch);
+    GenX86_64(outFile, instructions, instrCount, targetArch);
     
    fclose(outFile); 
 }

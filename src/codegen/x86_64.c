@@ -5,24 +5,24 @@
 #include "include/parser.h"
 #include "include/codegen.h"
 
-static const char *x86_regs[] = { "rax", "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11", "r12", "rsp" };
+static const char *x86Regs[] = { "rax", "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11", "r12", "rsp" };
 
-void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount, targetOS targetArch) {
+void GenX86_64(FILE *out, const Instruction *instructions, size_t instrCount, TargetOS targetArch) {
     fprintf(out, "; Genrated by USM compiler pre-alfa\n\n");
     
     fprintf(out, "section .data\n");
     for(size_t i = 0; i < instrCount; i++) {
 
-        if(instrctions[i].opcode == TOKEN_SECTION && strcmp(instrctions[i].src.val.name, "text") == 0) { break; }
+        if(instructions[i].opcode == TOKEN_SECTION && strcmp(instructions[i].src.val.name, "text") == 0) { break; }
         
-        if(instrctions[i].opcode == TOKEN_ID) {
-            fprintf(out, "    %s ", instrctions[i].src.val.name);
-            switch(instrctions[i].dest.type){
+        if(instructions[i].opcode == TOKEN_ID) {
+            fprintf(out, "    %s ", instructions[i].src.val.name);
+            switch(instructions[i].dest.type){
                 case OPERAND_IMM:
-                    fprintf(out, "dq %d\n", instrctions[i].dest.val.imm);
+                    fprintf(out, "dq %d\n", instructions[i].dest.val.imm);
                     break;
                 case OPERAND_VAR:
-                    fprintf(out, "db \"%s\", 0\n", instrctions[i].dest.val.name);
+                    fprintf(out, "db \"%s\", 0\n", instructions[i].dest.val.name);
             }
         }
     }
@@ -41,11 +41,11 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
     }
     
     for(size_t i = 0; i < instrCount; i++){
-        switch(instrctions[i].opcode){
+        switch(instructions[i].opcode){
             case TOKEN_ID: continue;
 
             case TOKEN_LABEL:
-                fprintf(out, "%s:\n", instrctions[i].src.val.name);
+                fprintf(out, "%s:\n", instructions[i].src.val.name);
                 break;
             case TOKEN_ADD:
             case TOKEN_SUB:
@@ -57,7 +57,7 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
             case TOKEN_SHR:
             case TOKEN_MOV:{
                 const char *cmd = "";
-                switch (instrctions[i].opcode) {            // deremens the instruction and wirte it (keep it DRY ladz)
+                switch (instructions[i].opcode) {            // deremens the instruction and wirte it (keep it DRY ladz)
                     case TOKEN_MOV: cmd = "mov"; break;
                     case TOKEN_ADD: cmd = "add"; break;
                     case TOKEN_SUB: cmd = "sub"; break;
@@ -71,13 +71,13 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
                     default: break;
                 }
                 
-                fprintf(out, "    %s %s, ", cmd, x86_regs[instrctions[i].dest.val.reg]);
-                switch(instrctions[i].src.type){
+                fprintf(out, "    %s %s, ", cmd, x86Regs[instructions[i].dest.val.reg]);
+                switch(instructions[i].src.type){
                     case OPERAND_IMM:
-                        fprintf(out, "%d\n", instrctions[i].src.val.imm);
+                        fprintf(out, "%d\n", instructions[i].src.val.imm);
                         break;
                     case OPERAND_REG:
-                        fprintf(out, "%s\n", x86_regs[instrctions[i].src.val.reg]);
+                        fprintf(out, "%s\n", x86Regs[instructions[i].src.val.reg]);
                     break;
                 }
                 break;
@@ -89,7 +89,7 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
             case TOKEN_JIL: 
             case TOKEN_CALL: {
                 const char *cmd = "";
-                switch(instrctions[i].opcode){
+                switch(instructions[i].opcode){
                     case TOKEN_JMP: cmd = "jmp"; break;
                     case TOKEN_JIE: cmd = "je"; break;
                     case TOKEN_JINE: cmd = "jne"; break;
@@ -99,48 +99,48 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
                     default: break;
                 }
 
-                fprintf(out, "    %s %s\n", cmd, instrctions[i].src.val.name);
+                fprintf(out, "    %s %s\n", cmd, instructions[i].src.val.name);
                 break;
             }
         case TOKEN_LOAD:
-            fprintf(out, "    mov %s, ", x86_regs[instrctions[i].src.val.reg]);
+            fprintf(out, "    mov %s, ", x86Regs[instructions[i].src.val.reg]);
             
-            switch(instrctions[i].dest.type){
+            switch(instructions[i].dest.type){
                 case OPERAND_REG:
-                    fprintf(out, "[%s]\n", x86_regs[instrctions[i].dest.val.reg]);
+                    fprintf(out, "[%s]\n", x86Regs[instructions[i].dest.val.reg]);
                     break;
                 case OPERAND_VAR:
-                    fprintf(out, "[%s]\n", instrctions[i].dest.val.name);
+                    fprintf(out, "[%s]\n", instructions[i].dest.val.name);
                     break;
             }
             break;
         case TOKEN_STR:
             fprintf(out, "    mov ");
 
-            switch(instrctions[i].src.type){
+            switch(instructions[i].src.type){
                 case OPERAND_REG:
-                    fprintf(out, "[%s], ", x86_regs[instrctions[i].src.val.reg]);
+                    fprintf(out, "[%s], ", x86Regs[instructions[i].src.val.reg]);
                     break;
                 case OPERAND_VAR:
-                    fprintf(out, "[%s], ", instrctions[i].src.val.name);
+                    fprintf(out, "[%s], ", instructions[i].src.val.name);
                 break;
             }
 
-            fprintf(out, "%s\n", x86_regs[instrctions[i].dest.val.reg]);
+            fprintf(out, "%s\n", x86Regs[instructions[i].dest.val.reg]);
             break;
         case TOKEN_PUSH:
             fprintf(out, "    push ");
-            switch(instrctions[i].src.type){
+            switch(instructions[i].src.type){
                 case OPERAND_REG:
-                    fprintf(out, "%s\n", x86_regs[instrctions[i].src.val.reg]);
+                    fprintf(out, "%s\n", x86Regs[instructions[i].src.val.reg]);
                     break;
                 case OPERAND_IMM:
-                    fprintf(out, "%d\n", instrctions[i].src.val.imm);
+                    fprintf(out, "%d\n", instructions[i].src.val.imm);
                     break;
             }
             break;
         case TOKEN_POP:
-            fprintf(out, "    pop %s\n", x86_regs[instrctions[i].dest.val.reg]);
+            fprintf(out, "    pop %s\n", x86Regs[instructions[i].dest.val.reg]);
             break;
         case TOKEN_EXIT:
             fprintf(out, "; EXIT\n");
@@ -164,33 +164,33 @@ void codegen_x86_64(FILE *out, const Instruction *instrctions, size_t instrCount
             fprintf(out, "    syscall\n");
             break;
         case TOKEN_DIV: {
-            const char *destReg = x86_regs[instrctions[i].dest.val.reg];
-            if(instrctions[i].dest.val.reg != 0){
+            const char *destReg = x86Regs[instructions[i].dest.val.reg];
+            if(instructions[i].dest.val.reg != 0){
                 fprintf(out, "; DIV init\n");
                 fprintf(out, "    mov rax, %s\n", destReg);
             }
            
                fprintf(out, "    cqo\n");
 
-               switch(instrctions[i].src.type){
+               switch(instructions[i].src.type){
                    case OPERAND_REG: {
-                       const char *srcReg = x86_regs[instrctions[i].src.val.reg];
+                       const char *srcReg = x86Regs[instructions[i].src.val.reg];
                        fprintf(out, "    idiv %s\n", srcReg);
                        break;
                    }
                    case OPERAND_IMM:
-                       fprintf(out, "    mov r10, %d\n", instrctions[i].src.val.imm);
+                       fprintf(out, "    mov r10, %d\n", instructions[i].src.val.imm);
                        fprintf(out, "    idiv r10\n");
                     break;
                }
-               if(instrctions[i].dest.val.reg != 0) {
+               if(instructions[i].dest.val.reg != 0) {
                    fprintf(out, "    mov %s, rax\n", destReg);
                    fprintf(out, "; end init\n");
                }
                break;
         }
         case TOKEN_NOT: 
-            fprintf(out, "    not %s\n", x86_regs[instrctions[i].dest.val.reg]);
+            fprintf(out, "    not %s\n", x86Regs[instructions[i].dest.val.reg]);
             break;
             
             default: break;
