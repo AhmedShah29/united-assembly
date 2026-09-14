@@ -4,6 +4,7 @@
 # compiler ignore idk about ur config file
 .clangd
 compile_flags.txt
+test
 
 # testing files
 test.usm
