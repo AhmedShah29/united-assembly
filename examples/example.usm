@@ -1,4 +1,4 @@
-.data
+.data                       ; NOTE: this example tested on win11 64bit and it worked
     val1 10
     val2 20
 
