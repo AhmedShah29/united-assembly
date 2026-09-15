@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include "include/lexer.h"
@@ -9,41 +10,50 @@ static const char *x86Regs[] = { "rax", "rdi", "rsi", "rdx", "rcx", "r8", "r9", 
 
 void GenX86_64(FILE *out, const Instruction *instructions, size_t instrCount, TargetOS targetArch) {
     fprintf(out, "; Genrated by USM compiler pre-alfa\n\n");
-    
-    fprintf(out, "section .data\n");
-    for(size_t i = 0; i < instrCount; i++) {
 
-        if(instructions[i].opcode == TOKEN_SECTION && strcmp(instructions[i].src.val.name, "text") == 0) { break; }
-        
-        if(instructions[i].opcode == TOKEN_ID) {
-            fprintf(out, "    %s ", instructions[i].src.val.name);
-            switch(instructions[i].dest.type){
-                case OPERAND_IMM:
-                    fprintf(out, "dq %d\n", instructions[i].dest.val.imm);
-                    break;
-                case OPERAND_VAR:
-                    fprintf(out, "db \"%s\", 0\n", instructions[i].dest.val.name);
-            }
-        }
-    }
     fprintf(out, "\n");
-
-    fprintf(out, "section .text\n");
-    fprintf(out, "    default rel\n");
-    switch(targetArch){
-        case OS_UNIX:
-            fprintf(out, "    global _start\n\n");
-            break;
-        case OS_WINDOWS:
-            fprintf(out, "    extern ExitProcess\n");
-            fprintf(out, "    global main\n\n");
-            break;
-    }
     
     for(size_t i = 0; i < instrCount; i++){
+    
         switch(instructions[i].opcode){
-            case TOKEN_ID: continue;
 
+            case TOKEN_SECTION:
+                if(strcmp(instructions[i].src.val.name, "data") == 0) { fprintf(out, "section .data\n"); }
+                else if (strcmp(instructions[i].src.val.name, "text") == 0) { 
+                    fprintf(out, "\nsection .text\n    default rel\n");
+                    switch(targetArch){
+                        case OS_UNIX:
+                            fprintf(out, "    global _start\n\n");
+                            break;
+                        case OS_WINDOWS:
+                            fprintf(out, "    extern ExitProcess\n");
+                            fprintf(out, "    global main\n\n");
+                            break;
+                    }
+                }
+
+                
+                continue;
+            case TOKEN_ID:
+                fprintf(out, "    %s ", instructions[i].src.val.name);
+                switch(instructions[i].dest.type){
+                    case OPERAND_IMM: {
+                        const char *size;
+                        switch(instructions[i].size){
+                            case 1: size = "db"; break;
+                            case 2: size = "dw"; break;
+                            case 4: size = "dd"; break;
+                            case 8: size = "dq"; break;
+                            default: size = "dq"; break;
+                        }
+                        fprintf(out, "%s %lld\n", size, instructions[i].dest.val.imm);
+                        break;
+                    }
+                    case OPERAND_VAR:
+                        fprintf(out, "db \"%s\", 0\n", instructions[i].dest.val.name);
+                        break;
+                }
+                continue;
             case TOKEN_LABEL:
                 fprintf(out, "%s:\n", instructions[i].src.val.name);
                 break;
@@ -55,6 +65,7 @@ void GenX86_64(FILE *out, const Instruction *instructions, size_t instrCount, Ta
             case TOKEN_XOR:
             case TOKEN_SHL:
             case TOKEN_SHR:
+            case TOKEN_CMP:
             case TOKEN_MOV:{
                 const char *cmd = "";
                 switch (instructions[i].opcode) {            // deremens the instruction and wirte it (keep it DRY ladz)
@@ -74,7 +85,7 @@ void GenX86_64(FILE *out, const Instruction *instructions, size_t instrCount, Ta
                 fprintf(out, "    %s %s, ", cmd, x86Regs[instructions[i].dest.val.reg]);
                 switch(instructions[i].src.type){
                     case OPERAND_IMM:
-                        fprintf(out, "%d\n", instructions[i].src.val.imm);
+                        fprintf(out, "%lld\n", instructions[i].src.val.imm);
                         break;
                     case OPERAND_REG:
                         fprintf(out, "%s\n", x86Regs[instructions[i].src.val.reg]);
@@ -135,7 +146,7 @@ void GenX86_64(FILE *out, const Instruction *instructions, size_t instrCount, Ta
                     fprintf(out, "%s\n", x86Regs[instructions[i].src.val.reg]);
                     break;
                 case OPERAND_IMM:
-                    fprintf(out, "%d\n", instructions[i].src.val.imm);
+                    fprintf(out, "%lld\n", instructions[i].src.val.imm);
                     break;
             }
             break;
@@ -179,7 +190,7 @@ void GenX86_64(FILE *out, const Instruction *instructions, size_t instrCount, Ta
                        break;
                    }
                    case OPERAND_IMM:
-                       fprintf(out, "    mov r10, %d\n", instructions[i].src.val.imm);
+                       fprintf(out, "    mov r10, %lld\n", instructions[i].src.val.imm);
                        fprintf(out, "    idiv r10\n");
                     break;
                }
