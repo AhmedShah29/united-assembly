@@ -16,7 +16,7 @@ do { \
     if((count) >= (capacity)) { \
         (capacity) = ((capacity) == 0) ? 8 : (capacity) * 2; \
         type *resizedMem = realloc((array), (capacity) * sizeof(type)); \
-        if(resizedMem == NULL) { UsmError(errorStr); } \
+        if(resizedMem == NULL) { UsmError(errorMsg); } \
         (array) = resizedMem; \
     } \
 } while (0)
@@ -59,6 +59,7 @@ static inline const char* token_type_to_string(TokenType type) {
         case TOKEN_SHL: return "TOKEN_SHL";
         case TOKEN_SHR: return  "TOKEN_SHR";
         case TOKEN_NOT: return "TOKEN_NOT";
+        case TOKEN_SIZE: return "TOKEN_SIZE";
         default: return "UNKNOWN";
     }
 }
