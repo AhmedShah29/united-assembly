@@ -33,9 +33,8 @@ int main(int argc, char *argv[]) {
 
     size_t instrCount = 0;
     Instruction *instructions = Parser(tokens, tokenCount, &instrCount);
-    free(tokens);
-
     debug_lexer_parser(instructions, instrCount, tokens, tokenCount);
+    free(tokens);
 
     GenerateCode(instructions, instrCount, "output.asm", OS_WINDOWS);
     
