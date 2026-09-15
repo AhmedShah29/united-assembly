@@ -19,7 +19,8 @@ typedef enum {
     TOKEN_INT,
     TOKEN_REG,
     TOKEN_ID,
-    TOKEN_LABEL,   
+    TOKEN_LABEL,
+    TOKEN_SIZE,
 
     /* Opcodes: Data Movement & Memory */
     TOKEN_MOV,
@@ -108,6 +109,9 @@ static inline TokenType get_token_enum(const char *word) {
     /* Registers (R0 - R9) & stack rigester */
     if(word[0] == 'R' && isdigit(word[1])) { return TOKEN_REG; }
     if(strcmp(word, "RSP") == 0) { return TOKEN_REG; }
+
+    /* Vars sizes */
+    if(word[0] == 'B' && isdigit(word[1])) { return TOKEN_SIZE; }
 
     /* Default Identifier */
     return TOKEN_ID; 
