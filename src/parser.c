@@ -8,11 +8,30 @@
 #include "include/utils.h"
 #include "include/resolver.h"
 
-static inline int32_t parse_immediate(const char *immStr, int line) {
+static inline uint8_t parse_size(const char *sizeStr, uint32_t line) {
+    int sizeNum = -1;
+
+    if(sizeStr[0] == 'B') {
+        sizeNum = atoi(&sizeStr[1]);
+    }
+
+    switch(sizeNum) {
+        case 8: return 1;
+        case 16: return 2;
+        case 32: return 4;
+        case 64: return 8;
+        default:
+            UsmError("at line %d\n'%s' is not a valid USM size\n sizes: B8/16/32/64", line, sizeStr);
+            break;
+    }
+    return (uint8_t)sizeNum;
+}
+
+static inline int64_t parse_immediate(const char *immStr, int line) {
     char *endPtr;
-    long immVal = strtol(immStr, &endPtr, 10);
+    long long immVal = strtoll(immStr, &endPtr, 10);
     if(endPtr == immStr || *endPtr != '\0') { UsmError("at line %d \n %s | is not a integer", line, immStr); }
-    return  (int32_t)immVal;
+    return  (int64_t)immVal;
 }
 
 static inline uint8_t parse_register(const char *regStr, int line) {
@@ -40,10 +59,10 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
 
     uint32_t i = 0;
     SectionType currentSection = SECTION_NONE; // section gaurd
-    
+
     while(i < tokenCount) {
 
-        
+
         switch (tokens[i].type) {
             case TOKEN_NLN: i++; continue;
 
@@ -72,7 +91,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 if(tokens[i].type == TOKEN_COMMA) { i++; } else { UsmError("at line %d \n expected a ',' ", tokens[i].line); }
 
                 switch (tokens[i].type) {
-                    case TOKEN_REG: 
+                    case TOKEN_REG:
                         instr.src.type = OPERAND_REG;
                         instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
                         i++;
@@ -82,11 +101,11 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                         instr.src.val.imm = parse_immediate(tokens[i].value, tokens[i].line);
                         i++;
                         break;
-                    default: UsmError("at line %d \n expected a register or immediate integer", tokens[i].line); 
+                    default: UsmError("at line %d \n expected a register or immediate integer", tokens[i].line);
                 }
 
                 check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
-                
+
                 instructions[instrCount] = instr;
                 instrCount++;
                 break;
@@ -118,7 +137,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 i++;
 
                 check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
-                
+
                 instructions[instrCount] = instr;
                 instrCount++;
                 break;
@@ -129,9 +148,9 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 instr.line = tokens[i].line;
                 instr.opcode = tokens[i].type;
                 i++;
-                
+
                 switch (tokens[i].type) {
-                    case TOKEN_REG: 
+                    case TOKEN_REG:
                         instr.src.type = OPERAND_REG;
                         instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
                         i++;
@@ -141,7 +160,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                         instr.src.val.imm = parse_immediate(tokens[i].value, tokens[i].line);
                         i++;
                         break;
-                    default: UsmError("at line %d \n expected a register or immediate integer", tokens[i].line); 
+                    default: UsmError("at line %d \n expected a register or immediate integer", tokens[i].line);
                 }
 
                 if(tokens[i].type == TOKEN_COMMA) { i++; } else { UsmError("at line %d \n expected a ',' ", tokens[i].line); }
@@ -153,7 +172,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 } else { UsmError("at line %d \n expected a register", tokens[i].line); }
 
                 check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
-                
+
                 instructions[instrCount] = instr;
                 instrCount++;
                 break;
@@ -168,7 +187,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 if(tokens[i].type == TOKEN_L_BRACK) { i++; } else { UsmError("at line %d\n expected a '[' for a address", tokens[i].line); }
 
                 switch(tokens[i].type) {
-                    case TOKEN_REG: 
+                    case TOKEN_REG:
                         instr.dest.type = OPERAND_REG;
                         instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
                         break;
@@ -183,14 +202,14 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 if(tokens[i].type == TOKEN_R_BRACK) { i++; } else { UsmError("at line %d\nexpected a ']' symbol after REG/VAR name", tokens[i].line); }
 
                 if(tokens[i].type == TOKEN_COMMA) { i++; } else { UsmError("at line %d\nexpected a comma ',' after the address", tokens[i].line); }
-                if(tokens[i].type == TOKEN_REG) { 
+                if(tokens[i].type == TOKEN_REG) {
                     instr.src.type = OPERAND_REG;
                     instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
                     i++;
                 } else { UsmError("at line %d\nexpected a register to load the value in", tokens[i].line); }
 
                 check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
-                
+
                 instructions[instrCount] = instr;
                 instrCount++;
                 break;
@@ -202,7 +221,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 instr.opcode = tokens[i].type;
                 i++;
 
-                if(tokens[i].type == TOKEN_REG) { 
+                if(tokens[i].type == TOKEN_REG) {
                     instr.dest.type = OPERAND_REG;
                     instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
                     i++;
@@ -211,9 +230,9 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 if(tokens[i].type == TOKEN_COMMA) { i++; } else { UsmError("at line %d\nexpected a comma ',' after the register", tokens[i].line); }
 
                 if(tokens[i].type == TOKEN_L_BRACK) { i++; } else { UsmError("at line %d\nexpected a '[' symbol", tokens[i].line); }
-                
+
                 switch (tokens[i].type) {
-                    case TOKEN_REG: 
+                    case TOKEN_REG:
                         instr.src.type = OPERAND_REG;
                         instr.src.val.reg = parse_register(tokens[i].value, tokens[i].line);
                         break;
@@ -228,11 +247,11 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 if(tokens[i].type == TOKEN_R_BRACK) { i++; } else { UsmError("at line %d\nexpected a ']'", tokens[i].line); }
 
                 check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
-                
+
                 instructions[instrCount] = instr;
                 instrCount++;
                 break;
-                
+
             }
             case TOKEN_PUSH:
             case TOKEN_POP: {
@@ -241,7 +260,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 instr.line = tokens[i].line;
                 instr.opcode = tokens[i].type;
 
-                if(tokens[i].type == TOKEN_PUSH) { 
+                if(tokens[i].type == TOKEN_PUSH) {
                     i++;
 
                     switch(tokens[i].type) {
@@ -259,7 +278,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
 
                             instr.dest.type = OPERAND_NONE;
                         break;
-                        default: 
+                        default:
                             UsmError("at line %d\nexpected a register or a immediate after PUSH command\n example: PUSH REG/IMM", tokens[i].line);
                         break;
                     }
@@ -271,7 +290,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                             instr.dest.type = OPERAND_REG;
                             instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
                             i++;
-    
+
                             instr.src.type = OPERAND_NONE;
                             break;
                         default:
@@ -296,6 +315,19 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
 
                 i++;
 
+                switch(tokens[i].type) {
+                    case TOKEN_SIZE:
+                        instr.size = parse_size(tokens[i].value, tokens[i].line);
+                        i++;
+                        break;
+                    case TOKEN_STRING:
+                        instr.size = 1;
+                        break;
+                    default:
+                        UsmError("at line %d\nexpected a size after the variable name", tokens[i].line);
+                        break;
+                }
+
                 switch(tokens[i].type){
                     case TOKEN_STRING:
                         instr.dest.type = OPERAND_VAR;
@@ -305,7 +337,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                         instr.dest.type = OPERAND_IMM;
                         instr.dest.val.imm = parse_immediate(tokens[i].value, tokens[i].line);
                         break;
-                    default: 
+                    default:
                         UsmError("at line %d\nexpected a integer or a string as a value", tokens[i].line);
                 }
                 i++;
@@ -313,9 +345,9 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
                 instructions[instrCount] = instr;
                 instrCount++;
-                
+
                 break;
-                
+
             }
             case TOKEN_SECTION: {
                 Instruction instr;
@@ -323,7 +355,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 instr.src.type = OPERAND_LABEL;
                 instr.line = tokens[i].line;
                 instr.dest.type = OPERAND_NONE;
-                
+
                 if(strcmp(tokens[i].value, "data") == 0) {
                     currentSection = SECTION_DATA;
                     strcpy(instr.src.val.name, tokens[i].value);
@@ -333,11 +365,11 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 } else { UsmError("at line %d\nuknown section '.%s'\n Usm have .data & .text sections only", tokens[i].line, tokens[i].value); }
 
                 i++;
-                
+
                 check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
                 instructions[instrCount] = instr;
                 instrCount++;
-                
+
                 break;
             }
             case TOKEN_LABEL: {
@@ -346,7 +378,7 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 instr.line = tokens[i].line;
                 instr.opcode = tokens[i].type;
                 instr.dest.type = OPERAND_NONE;
-                
+
                 instr.src.type = OPERAND_LABEL;
                 strcpy(instr.src.val.name, tokens[i].value);
                 i++;
@@ -354,12 +386,12 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
                 check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
                 instructions[instrCount] = instr;
                 instrCount++;
-                
+
                 break;
             }
             case TOKEN_RET:
             case TOKEN_SYSCALL:
-            case TOKEN_EXIT: { 
+            case TOKEN_EXIT: {
                 if(currentSection != SECTION_TEXT) { UsmError("at line %d\ninstrctions must be in the text section\n help: add .text before your first command", tokens[i].line); }
                 Instruction instr;
                 instr.line = tokens[i].line;
@@ -373,10 +405,10 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
 
                 instructions[instrCount] = instr;
                 instrCount++;
-                
+
                 break;
             }
-            case TOKEN_NOT: { 
+            case TOKEN_NOT: {
                 if(currentSection != SECTION_TEXT) { UsmError("at line %d\ninstrctions must be in the text section\n help: add .text before your first command", tokens[i].line); }
                 Instruction instr;
                 instr.line = tokens[i].line;
@@ -401,10 +433,10 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
 
                 instructions[instrCount] = instr;
                 instrCount++;
-                
+
                 break;
             }
-            case TOKEN_EOF: 
+            case TOKEN_EOF:
                 if (outInstructionCount != NULL) { *outInstructionCount = instrCount; }
                 Resolver(instructions, instrCount);
                 return instructions;
