@@ -138,6 +138,7 @@ Token* Lexer(const char *source, size_t *outTokenCount) {
 
     tokens[tokenCount].type = TOKEN_EOF;
     tokens[tokenCount].line = currentLine;
+    tokens[tokenCount].value[0] = '\0';
     tokenCount++;
 
     if(outTokenCount) *outTokenCount = tokenCount;
