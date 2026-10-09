@@ -14,6 +14,7 @@ typedef enum {
     TOKEN_R_BRACK,  // ]
     TOKEN_STRING,   // "string"
     TOKEN_SECTION,  // .data .text ....
+    TOKEN_ADDR,     // &var
 
     /* Literals & Identifiers */
     TOKEN_INT,
@@ -57,6 +58,8 @@ typedef enum {
     TOKEN_CALL,
     TOKEN_RET,
     TOKEN_SYSCALL,
+    TOKEN_EXTERN,
+    TOKEN_LEA,
     TOKEN_EXIT
 } TokenType;
 
@@ -70,49 +73,51 @@ Token* Lexer(const char *source, size_t *outTokenCount);
 
 static inline TokenType get_token_enum(const char *word) {
     /* Opcodes: Data Movement & Memory */
-    if(strcmp(word, "MOV") == 0) return TOKEN_MOV;
-    if(strcmp(word, "LOAD") == 0) return TOKEN_LOAD;
-    if(strcmp(word, "STR") == 0) return TOKEN_STR;
+    if(!strcmp(word, "MOV")) return TOKEN_MOV;
+    else if(!strcmp(word, "LOAD")) return TOKEN_LOAD;
+    else if(!strcmp(word, "STR")) return TOKEN_STR;
 
     /* Opcodes: Arithmetic */
-    if(strcmp(word, "ADD") == 0) return TOKEN_ADD;
-    if(strcmp(word, "SUB") == 0) return TOKEN_SUB;
-    if(strcmp(word, "MUL") == 0) return TOKEN_MUL;
-    if(strcmp(word, "DIV") == 0) return TOKEN_DIV;
+    else if(!strcmp(word, "ADD")) return TOKEN_ADD;
+    else if(!strcmp(word, "SUB")) return TOKEN_SUB;
+    else if(!strcmp(word, "MUL")) return TOKEN_MUL;
+    else if(!strcmp(word, "DIV")) return TOKEN_DIV;
 
     /* Opcodes: Logical */
-    if(strcmp(word, "AND") == 0) return TOKEN_AND;
-    if(strcmp(word, "OR") == 0) return TOKEN_OR;
-    if(strcmp(word, "XOR") == 0) return TOKEN_XOR;
+    else if(!strcmp(word, "AND")) return TOKEN_AND;
+    else if(!strcmp(word, "OR")) return TOKEN_OR;
+    else if(!strcmp(word, "XOR")) return TOKEN_XOR;
 
     /* Opcodes: Control Flow */
-    if(strcmp(word, "CMP") == 0) return TOKEN_CMP;
-    if(strcmp(word, "JMP") == 0) return TOKEN_JMP;
-    if(strcmp(word, "JIE") == 0) return TOKEN_JIE;
-    if(strcmp(word, "JINE") == 0) return TOKEN_JINE;
-    if(strcmp(word, "JIG") == 0) return TOKEN_JIG;
-    if(strcmp(word, "JIL") == 0) return TOKEN_JIL;
+    else if(!strcmp(word, "CMP")) return TOKEN_CMP;
+    else if(!strcmp(word, "JMP")) return TOKEN_JMP;
+    else if(!strcmp(word, "JIE")) return TOKEN_JIE;
+    else if(!strcmp(word, "JINE")) return TOKEN_JINE;
+    else if(!strcmp(word, "JIG")) return TOKEN_JIG;
+    else if(!strcmp(word, "JIL")) return TOKEN_JIL;
 
     /* Opcodes: Stack & System */
-    if(strcmp(word, "PUSH") == 0) return TOKEN_PUSH;
-    if(strcmp(word, "POP") == 0) return TOKEN_POP;
-    if(strcmp(word, "CALL") == 0) return TOKEN_CALL;
-    if(strcmp(word, "RET") == 0) return TOKEN_RET;
-    if(strcmp(word, "SYSCALL") == 0) return TOKEN_SYSCALL;
-    if(strcmp(word, "EXIT") == 0) return TOKEN_EXIT;
-
+    else if(!strcmp(word, "PUSH")) return TOKEN_PUSH;
+    else if(!strcmp(word, "POP")) return TOKEN_POP;
+    else if(!strcmp(word, "CALL")) return TOKEN_CALL;
+    else if(!strcmp(word, "RET")) return TOKEN_RET;
+    else if(!strcmp(word, "SYSCALL")) return TOKEN_SYSCALL;
+    else if(!strcmp(word, "EXIT")) return TOKEN_EXIT;
+    else if(!strcmp(word, "EXTERN")) return TOKEN_EXTERN;
+    else if(!strcmp(word, "LEA")) return TOKEN_LEA;
+    
     /* Opcodes: bitwise */
-    if(strcmp(word, "SHL") == 0) return TOKEN_SHL;
-    if(strcmp(word, "SHR") == 0) return TOKEN_SHR;
-    if(strcmp(word, "NOT") == 0) return TOKEN_NOT;
+    else if(!strcmp(word, "SHL")) return TOKEN_SHL;
+    else if(!strcmp(word, "SHR")) return TOKEN_SHR;
+    else if(!strcmp(word, "NOT")) return TOKEN_NOT;
 
     /* Registers (R0 - R9) & stack rigester */
-    if(word[0] == 'R' && isdigit(word[1])) { return TOKEN_REG; }
-    if(strcmp(word, "RSP") == 0) { return TOKEN_REG; }
+    else if(word[0] == 'R' && isdigit(word[1])) return TOKEN_REG;
+    else if(!strcmp(word, "RSP")) return TOKEN_REG;
 
     /* Vars sizes */
-    if(word[0] == 'B' && isdigit(word[1])) { return TOKEN_SIZE; }
-
+    else if(word[0] == 'B' && isdigit(word[1])) return TOKEN_SIZE;
+    
     /* Default Identifier */
     return TOKEN_ID; 
 }
