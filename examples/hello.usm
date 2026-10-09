@@ -1,0 +1,17 @@
+.data
+    msg "Hello, World! from Usm"
+
+.text
+    EXTERN printf
+
+main:
+    SUB RSP, 40
+    
+    LEA &msg, R4
+    
+    MOV 0, R0
+    CALL printf
+    
+    ADD RSP, 40
+    MOV 0, R0
+    EXIT
