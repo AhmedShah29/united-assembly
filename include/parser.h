@@ -16,7 +16,8 @@ typedef enum {
     OPERAND_REG,
     OPERAND_IMM,
     OPERAND_LABEL,
-    OPERAND_VAR
+    OPERAND_VAR,
+    OPERAND_ADDR
 } OperandType;
 
 typedef struct {
