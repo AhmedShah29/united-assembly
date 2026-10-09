@@ -8,7 +8,8 @@
 
 typedef enum {
     TYPE_VAR,
-    TYPE_LABEL
+    TYPE_LABEL,
+    TYPE_EXTERN
 } ItemType;
 
 typedef struct {

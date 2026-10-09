@@ -1,5 +1,5 @@
-#include <limits.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include "include/error.h"
 #include "include/lexer.h"
@@ -20,6 +20,11 @@ void Resolver(const Instruction *instrutions, size_t InstrCount) {
                 break;
             case TOKEN_ID:
                 HashMap_insert(&map, instrutions[i].src.val.name, i, TYPE_VAR);
+                break;
+            case TOKEN_EXTERN:
+                HashMap_insert(&map, instrutions[i].src.val.name, i, TYPE_EXTERN);
+                break;
+            default: continue;
         }
     }
     
@@ -52,10 +57,14 @@ void Resolver(const Instruction *instrutions, size_t InstrCount) {
                 break;
             case TOKEN_CALL:
                 if(instrutions[i].src.type == OPERAND_LABEL) {
-                    if(HashMap_get(&map, instrutions[i].src.val.name, TYPE_LABEL) == UINT32_MAX) {
-                        UsmError("at line %d\nfunction '%s' is not defined", instrutions[i].line, instrutions[i].src.val.name);
+                    uint32_t labelIdx = HashMap_get(&map, instrutions[i].src.val.name, TYPE_LABEL);
+                    uint32_t externIdx = HashMap_get(&map, instrutions[i].src.val.name, TYPE_EXTERN);
+                                    
+                    if(labelIdx == UINT32_MAX && externIdx == UINT32_MAX) {
+                        UsmError("at line %d\nfunction or label '%s' is not defined or declared as EXTERN", instrutions[i].line, instrutions[i].src.val.name);
                     }
                 }
+
                 break;
             default: break;
         }
