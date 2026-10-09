@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "include/codegen.h"
 #include "include/error.h"
+#include "codegen/x86_64.c"
 
 void GenerateCode(const Instruction *instructions, const size_t instrCount, const char *outFilePath, TargetOS targetArch) {
     FILE *outFile = fopen(outFilePath, "w");
