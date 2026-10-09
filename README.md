@@ -12,7 +12,7 @@ The sole purpose of USM is to teach low-level programming fundamentals: **regist
 ## Target Architectures
 
 **Note about the x32 architectures:**
-Due to usm having a 10 rigesters and some of the x32 CPUs dont have 10 rigesters usm Supports:
+Due to usm having a 10 registers and some of the x32 CPUs dont have 10 registers usm Supports:
 
 ### Work in Progress
 
@@ -20,10 +20,23 @@ Due to usm having a 10 rigesters and some of the x32 CPUs dont have 10 rigesters
 
 ### Coming
 
-- **ARM64/32**
-- **RISC-V 64/32**
+- **ARM 64/32 bits**
+- **RISC-V 64/32 bits**
+- **MIPS 32/64 bits**
   
 ## Instruction Set Reference (ISR)
+
+### Variable Sizes
+USM uses a unified, bit-based size system:
+
+| Syntax | Size |
+| :--- | :--- | 
+| `B8` | 8-bit (1 byte) |
+| `B16` | 16-bit (2 bytes) |
+| `B32` | 32-bit (4 bytes) |
+| `B64` | 64-bit (8 bytes) |
+
+*Note: Strings do not require a size declaration and are null-terminated automatically.*
 
 ### Data Movement & Memory Access
 **(Uses `[ ]` for address)**
@@ -33,6 +46,7 @@ Due to usm having a 10 rigesters and some of the x32 CPUs dont have 10 rigesters
 | MOV | `MOV REG/IMM, REG` | Copies the value from the source (register or immediate value) into the destination register. |
 | LOAD | `LOAD [VAR], REG` | Loads the value from the memory address into the register. |
 | STR | `STR REG, [VAR]` | Stores the value from the register into the memory address. |
+| LEA | `LEA &VAR, REG` | Loads the **memory address** (pointer) of the variable into the destination register. |
 
 ### Arithmetic Operations
 
@@ -74,4 +88,5 @@ Due to usm having a 10 rigesters and some of the x32 CPUs dont have 10 rigesters
 | CALL | `CALL LABEL` | Calls a function (pushes return address, jumps to label). |
 | RET | `RET` | Returns from a function (pops return address, jumps back). |
 | SYSCALL | `SYSCALL` | Invokes an OS system call (expects args in registers). |
+| EXTERN | `EXTERN NAME` | Declares an external function or variable to be resolved by the linker. |
 | EXIT | `EXIT` | Safely terminates program execution using the exit code stored in R0. |
