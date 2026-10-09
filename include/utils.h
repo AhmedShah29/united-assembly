@@ -60,6 +60,9 @@ static inline const char* token_type_to_string(TokenType type) {
         case TOKEN_SHR: return  "TOKEN_SHR";
         case TOKEN_NOT: return "TOKEN_NOT";
         case TOKEN_SIZE: return "TOKEN_SIZE";
+        case TOKEN_EXTERN: return "TOKEN_EXTERN";
+        case TOKEN_LEA: return "TOKEN_LEA";
+        case TOKEN_ADDR: return "TOKEN_ADDR";
         default: return "UNKNOWN";
     }
 }
