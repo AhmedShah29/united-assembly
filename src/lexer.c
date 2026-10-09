@@ -8,10 +8,12 @@
 #include "include/error.h"
 #include "include/utils.h"
 
+static inline Token make_token(TokenType tokentype, uint32_t line, char value);
+
 Token* Lexer(const char *source, size_t *outTokenCount) {
 
     const char *currentIndex = source;
-    int currentLine = 1; // file lines calculated through the '\n'
+    size_t currentLine = 1; // file lines calculated through the '\n'
     size_t capacity = strlen(source) / 2 + 8; // max size of the tokens array
     size_t tokenCount = 0;  // current tokens array size
 
@@ -79,13 +81,14 @@ Token* Lexer(const char *source, size_t *outTokenCount) {
                     tokens[tokenCount].line = currentLine;
     
                     tokenCount++;
-                } else if(*currentIndex == ',' || *currentIndex == '[' || *currentIndex == ']') {
+                } else if(*currentIndex == ',' || *currentIndex == '[' || *currentIndex == ']' || *currentIndex == '&') {
                     check_mem(tokens, tokenCount, capacity, Token, "Failed to reallocate memory for tokens array");
     
                     switch(*currentIndex) {
                         case ',': tokens[tokenCount].type = TOKEN_COMMA; break;
                         case '[': tokens[tokenCount].type = TOKEN_L_BRACK; break;
                         case ']': tokens[tokenCount].type = TOKEN_R_BRACK; break;
+                        case '&': tokens[tokenCount].type = TOKEN_ADDR; break;
                     }
                     tokens[tokenCount].value[0] = '\0';
                     tokens[tokenCount].line = currentLine;
@@ -144,3 +147,10 @@ Token* Lexer(const char *source, size_t *outTokenCount) {
     if(outTokenCount) *outTokenCount = tokenCount;
     return tokens;
 }
+
+/*
+static inline Token make_token(TokenType tokentype, uint32_t line, char value, Token* tokens)
+{
+    //tokens[tokenCount]
+}
+*/
