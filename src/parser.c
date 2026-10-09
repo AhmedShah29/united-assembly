@@ -436,6 +436,75 @@ Instruction* Parser(const Token *tokens, size_t tokenCount, size_t *outInstructi
 
                 break;
             }
+            case TOKEN_EXTERN: {
+                Instruction instr;
+                instr.line = tokens[i].line;
+                instr.opcode = TOKEN_EXTERN;
+
+                i++;
+
+                switch(tokens[i].type) {
+                    case TOKEN_ID:
+                        instr.src.type = OPERAND_LABEL;
+                        strcpy(instr.src.val.name, tokens[i].value);
+                        break;
+                    default: 
+                        UsmError("at line %d\n expected a external function name\n  example: EXTERN exitProcess", tokens[i].line);
+                        break;
+                }
+                i++;
+
+                check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
+
+                instructions[instrCount] = instr;
+                instrCount++;
+                
+                break;
+            }
+            case TOKEN_LEA: {
+                if(currentSection != SECTION_TEXT) { UsmError("at line %d\ninstrctions must be in the text section\n help: add .text before your first command", tokens[i].line); }
+                Instruction instr;
+                instr.line = tokens[i].line;
+                instr.opcode = TOKEN_LEA;
+
+                i++;
+                switch(tokens[i].type){
+                    case TOKEN_ADDR:
+                        i++;
+                        break;
+                    default:
+                        UsmError("at line %d\nexpected a & symbol before the varible name\n note: LEA &var, REG", tokens[i].line);
+                        break;
+                }
+
+                switch(tokens[i].type){
+                    case TOKEN_ID:
+                        strcpy(instr.src.val.name, tokens[i].value);
+                        instr.src.type = OPERAND_ADDR;
+                        i++;
+                        break;
+                    default:
+                        UsmError("at line %d\nexpected a identfire after the & symbol\n    hint: LEA &var, REG\n", tokens[i].line);
+                        break;
+                }
+                if(tokens[i].type == TOKEN_COMMA) i++; else {
+                    UsmError("at line %d\nexpected a comma ',' after the varible name\n    Hint: LEA &var, REG\n", tokens[i].line);
+                }
+                if(tokens[i].type == TOKEN_REG) {
+                    instr.dest.type = OPERAND_REG;
+                    instr.dest.val.reg = parse_register(tokens[i].value, tokens[i].line);
+                } else {
+                    UsmError("at line %d\nexpected a rigester to load the adress into\n    hint: LEA &var, REG\n", tokens[i].line);
+                }
+                i++;
+
+                check_mem(instructions, instrCount, capacity, Instruction, "unable to realloc memory for the instructions");
+
+                instructions[instrCount] = instr;
+                instrCount++;
+                
+                break;
+            }
             case TOKEN_EOF:
                 if (outInstructionCount != NULL) { *outInstructionCount = instrCount; }
                 Resolver(instructions, instrCount);
