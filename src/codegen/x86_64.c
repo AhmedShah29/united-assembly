@@ -10,8 +10,6 @@ static const char *x86Regs[] = { "rax", "rdi", "rsi", "rdx", "rcx", "r8", "r9", 
 
 void GenX86_64(FILE *out, const Instruction *instructions, size_t instrCount, TargetOS targetArch) {
     fprintf(out, "; Genrated by USM compiler pre-alfa\n\n");
-
-    fprintf(out, "\n");
     
     for(size_t i = 0; i < instrCount; i++){
     
@@ -31,8 +29,6 @@ void GenX86_64(FILE *out, const Instruction *instructions, size_t instrCount, Ta
                             break;
                     }
                 }
-
-                
                 continue;
             case TOKEN_ID:
                 fprintf(out, "    %s ", instructions[i].src.val.name);
@@ -113,97 +109,105 @@ void GenX86_64(FILE *out, const Instruction *instructions, size_t instrCount, Ta
                 fprintf(out, "    %s %s\n", cmd, instructions[i].src.val.name);
                 break;
             }
-        case TOKEN_LOAD:
-            fprintf(out, "    mov %s, ", x86Regs[instructions[i].src.val.reg]);
+            case TOKEN_LOAD:
+                fprintf(out, "    mov %s, ", x86Regs[instructions[i].src.val.reg]);
             
-            switch(instructions[i].dest.type){
-                case OPERAND_REG:
-                    fprintf(out, "[%s]\n", x86Regs[instructions[i].dest.val.reg]);
-                    break;
-                case OPERAND_VAR:
-                    fprintf(out, "[%s]\n", instructions[i].dest.val.name);
-                    break;
-            }
-            break;
-        case TOKEN_STR:
-            fprintf(out, "    mov ");
+                switch(instructions[i].dest.type){
+                    case OPERAND_REG:
+                        fprintf(out, "[%s]\n", x86Regs[instructions[i].dest.val.reg]);
+                        break;
+                    case OPERAND_VAR:
+                        fprintf(out, "[%s]\n", instructions[i].dest.val.name);
+                        break;
+                }
+                break;
+            case TOKEN_STR:
+                fprintf(out, "    mov ");
 
-            switch(instructions[i].src.type){
-                case OPERAND_REG:
-                    fprintf(out, "[%s], ", x86Regs[instructions[i].src.val.reg]);
-                    break;
-                case OPERAND_VAR:
-                    fprintf(out, "[%s], ", instructions[i].src.val.name);
+                switch(instructions[i].src.type){
+                    case OPERAND_REG:
+                        fprintf(out, "[%s], ", x86Regs[instructions[i].src.val.reg]);
+                        break;
+                    case OPERAND_VAR:
+                        fprintf(out, "[%s], ", instructions[i].src.val.name);
+                        break;
+                }
+
+                fprintf(out, "%s\n", x86Regs[instructions[i].dest.val.reg]);
+                break;
+            case TOKEN_PUSH:
+                fprintf(out, "    push ");
+                switch(instructions[i].src.type){
+                    case OPERAND_REG:
+                        fprintf(out, "%s\n", x86Regs[instructions[i].src.val.reg]);
+                        break;
+                    case OPERAND_IMM:
+                        fprintf(out, "%lld\n", instructions[i].src.val.imm);
+                        break;
+                }
+            break;
+            case TOKEN_POP:
+                fprintf(out, "    pop %s\n", x86Regs[instructions[i].dest.val.reg]);
+                break;
+            case TOKEN_EXIT:
+                fprintf(out, "; EXIT\n");
+                switch(targetArch){
+                    case OS_UNIX:
+                        fprintf(out, "    mov rax, 60\n");
+                        fprintf(out, "    mov rdi, 0\n");
+                        fprintf(out, "    syscall\n");
+                        break;
+                    case OS_WINDOWS:
+                        fprintf(out, "    sub rsp, 40\n"); // shadow space
+                        fprintf(out, "    mov rcx, 0\n");
+                        fprintf(out, "    call ExitProcess\n");
+                        break;
+                }
+                break;
+                
+            case TOKEN_RET:
+                fprintf(out, "    ret\n");
+                break; 
+            case TOKEN_SYSCALL:
+                fprintf(out, "    syscall\n");
+                break;
+            case TOKEN_DIV: {
+                const char *destReg = x86Regs[instructions[i].dest.val.reg];
+                if(instructions[i].dest.val.reg != 0){
+                    fprintf(out, "; DIV init\n");
+                    fprintf(out, "    mov rax, %s\n", destReg);
+                }
+                
+                fprintf(out, "    cqo\n");
+                
+                switch(instructions[i].src.type){
+                    case OPERAND_REG: {
+                        const char *srcReg = x86Regs[instructions[i].src.val.reg];
+                        fprintf(out, "    idiv %s\n", srcReg);
+                        break;
+                    }
+                    case OPERAND_IMM:
+                        fprintf(out, "    mov r10, %lld\n", instructions[i].src.val.imm);
+                        fprintf(out, "    idiv r10\n");
+                        break;
+                }
+                if(instructions[i].dest.val.reg != 0) {
+                    fprintf(out, "    mov %s, rax\n", destReg);
+                    fprintf(out, "; end init\n");
+                }
                 break;
             }
-
-            fprintf(out, "%s\n", x86Regs[instructions[i].dest.val.reg]);
-            break;
-        case TOKEN_PUSH:
-            fprintf(out, "    push ");
-            switch(instructions[i].src.type){
-                case OPERAND_REG:
-                    fprintf(out, "%s\n", x86Regs[instructions[i].src.val.reg]);
-                    break;
-                case OPERAND_IMM:
-                    fprintf(out, "%lld\n", instructions[i].src.val.imm);
-                    break;
-            }
-            break;
-        case TOKEN_POP:
-            fprintf(out, "    pop %s\n", x86Regs[instructions[i].dest.val.reg]);
-            break;
-        case TOKEN_EXIT:
-            fprintf(out, "; EXIT\n");
-            switch(targetArch){
-                case OS_UNIX:
-                    fprintf(out, "    mov rax, 60\n");
-                    fprintf(out, "    mov rdi, 0\n");
-                    fprintf(out, "    syscall\n");
-                    break;
-                case OS_WINDOWS:
-                    fprintf(out, "    mov rcx, 0\n");
-                    fprintf(out, "    call ExitProcess\n");
-                    break;
-            }
-            break;
-            
-        case TOKEN_RET:
-            fprintf(out, "    ret\n");
-            break; 
-        case TOKEN_SYSCALL:
-            fprintf(out, "    syscall\n");
-            break;
-        case TOKEN_DIV: {
-            const char *destReg = x86Regs[instructions[i].dest.val.reg];
-            if(instructions[i].dest.val.reg != 0){
-                fprintf(out, "; DIV init\n");
-                fprintf(out, "    mov rax, %s\n", destReg);
-            }
-           
-               fprintf(out, "    cqo\n");
-
-               switch(instructions[i].src.type){
-                   case OPERAND_REG: {
-                       const char *srcReg = x86Regs[instructions[i].src.val.reg];
-                       fprintf(out, "    idiv %s\n", srcReg);
-                       break;
-                   }
-                   case OPERAND_IMM:
-                       fprintf(out, "    mov r10, %lld\n", instructions[i].src.val.imm);
-                       fprintf(out, "    idiv r10\n");
-                    break;
-               }
-               if(instructions[i].dest.val.reg != 0) {
-                   fprintf(out, "    mov %s, rax\n", destReg);
-                   fprintf(out, "; end init\n");
-               }
-               break;
-        }
-        case TOKEN_NOT: 
-            fprintf(out, "    not %s\n", x86Regs[instructions[i].dest.val.reg]);
-            break;
-            
+            case TOKEN_EXTERN:
+                fprintf(out, "    extern %s\n", instructions[i].src.val.name);
+                break;
+            case TOKEN_NOT: 
+                fprintf(out, "    not %s\n", x86Regs[instructions[i].dest.val.reg]);
+                break;
+                
+            case TOKEN_LEA:
+                fprintf(out, "    lea %s, ", x86Regs[instructions[i].dest.val.reg]);
+                fprintf(out, "[rel %s]\n", instructions[i].src.val.name);
+                break;
             default: break;
         }
     }
