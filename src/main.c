@@ -6,6 +6,7 @@
 #include "include/error.h"
 #include "include/utils.h"
 #include "include/codegen.h"
+#include "include/pool.h"
 
 int main(int argc, char *argv[]) {
 
@@ -27,8 +28,12 @@ int main(int argc, char *argv[]) {
     buffer[fileSize] = '\0';
     fclose(file); // closes the file
 
+    Pool stringPool;
+    
+    if (!pool_init(&stringPool, 4096)) UsmError("Failed to initialize String Pool");
+
     size_t tokenCount = 0;
-    Token *tokens = Lexer(buffer, &tokenCount);
+    Token *tokens = Lexer(buffer, &tokenCount, &stringPool);
     free(buffer);
 
     size_t instrCount = 0;
