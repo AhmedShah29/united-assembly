@@ -71,10 +71,10 @@ static void debug_lexer_parser(Instruction *instructions,  size_t instrCount, To
     printf("--- USM Lexer Debug ---\n");
     
     for (size_t i = 0; i < tokenCount; i++) {
-         printf("Line: %u | Type: %-12s | Value: '%s'\n" 
+         printf("Line: %u | Type: %-12s | strID: '%d'\n" 
             ,tokens[i].line
             ,token_type_to_string(tokens[i].type)
-            ,tokens[i].value
+            ,tokens[i].strId
         );
     }
 
