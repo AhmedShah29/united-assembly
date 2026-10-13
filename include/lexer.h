@@ -1,6 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include "include/pool.h"
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
@@ -66,10 +67,11 @@ typedef enum {
 typedef  struct {
     TokenType type;
     uint32_t line;
-    char value[32];
+    uint32_t strId;
+    uint32_t col;
 } Token;
 
-Token* Lexer(const char *source, size_t *outTokenCount);
+Token* Lexer(const char *source, size_t *outTokenCount, Pool* pool);
 
 static inline TokenType get_token_enum(const char *word) {
     /* Opcodes: Data Movement & Memory */

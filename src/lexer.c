@@ -7,150 +7,168 @@
 #include "include/lexer.h"
 #include "include/error.h"
 #include "include/utils.h"
+#include "include/pool.h"
 
-static inline Token make_token(TokenType tokentype, uint32_t line, char value);
+typedef struct {
+    const char *currIndex;
+    size_t cap;
+    uint32_t currLine;
+    uint32_t currCol;
+} LexerState;
 
-Token* Lexer(const char *source, size_t *outTokenCount) {
+static inline void emit_token(Token **tokens, size_t *count, size_t *capacity, 
+    TokenType type, LexerState *state,
+    const char *value, Pool *pool
+);
 
-    const char *currentIndex = source;
-    size_t currentLine = 1; // file lines calculated through the '\n'
-    size_t capacity = strlen(source) / 2 + 8; // max size of the tokens array
-    size_t tokenCount = 0;  // current tokens array size
+static inline void advance(LexerState* state);
 
-    Token *tokens = malloc(capacity * sizeof(Token));
-    check_mem(tokens, tokenCount, capacity, Token, "Failed to reallocate memory for tokens array");
+Token* Lexer(const char *source, size_t *outTokenCount, Pool* pool)
+{
+    //const char *state.currIndex = source;
+    //size_t state.currLine = 1; 
+    //size_t capacity = strlen(source) / 2 + 8;
+    size_t tokenCount = 0;  // tokens array size
 
-    while(*currentIndex != '\0') {
-        switch(*currentIndex) {
+    LexerState state = {
+        .currIndex = source,
+        .cap = strlen(source) / 2 + 8,  // init capacity 1/2 of the source size
+        .currLine = 1,
+        .currCol = 1,
+    };
+
+    Token *tokens = malloc(state.cap * sizeof(Token));
+    check_mem(tokens, tokenCount, state.cap, Token, "Failed to reallocate memory for tokens array");
+
+    while(*state.currIndex != '\0') {
+        switch(*state.currIndex) {
             case ' ':
             case '\t':           /* skips spaces etc... */
             case '\r':
-                currentIndex++;
+                advance(&state);
                 break;
             case '\n':
-                
-                check_mem(tokens, tokenCount, capacity, Token, "Failed to reallocate memory for tokens array");
-    
-                tokens[tokenCount].type = TOKEN_NLN;
-                tokens[tokenCount].value[0] = '\0';
-                tokens[tokenCount].line = currentLine;
-                
-                currentLine++;
-                currentIndex++;
-                tokenCount++;
+                emit_token(&tokens, &tokenCount, &state.cap, TOKEN_NLN, &state, "", pool);
+                advance(&state);
                 break;
             case ';':
-                while (*currentIndex != '\n' && *currentIndex != '\0') { currentIndex++; }
+                while (*state.currIndex != '\n' && *state.currIndex != '\0') advance(&state);
                 break;
+            case '[':
+                emit_token(&tokens, &tokenCount, &state.cap, TOKEN_L_BRACK, &state, "", pool);
+                advance(&state);
+                break;
+            case ']': 
+                emit_token(&tokens, &tokenCount, &state.cap, TOKEN_R_BRACK, &state, "", pool);
+                advance(&state);
+                break;
+            case '&':
+                emit_token(&tokens, &tokenCount, &state.cap, TOKEN_ADDR, &state, "", pool);
+                advance(&state);
+                break;
+            case ',':
+                emit_token(&tokens, &tokenCount, &state.cap, TOKEN_COMMA, &state, "", pool);
+                advance(&state);
+                break;
+            case '.': {
+                advance(&state);
+                const char* startIndex = state.currIndex;
+
+                while(isalpha(*state.currIndex)) advance(&state);
+                
+                size_t len = state.currIndex - startIndex;
+                char word[len + 1]; // <-- not good
+                strncpy(word, startIndex, len);
+                word[len] = '\0';
+
+                emit_token(&tokens, &tokenCount, &state.cap, TOKEN_SECTION, &state, word, pool);
+                break;
+            }
+            case '"': {
+                advance(&state);
+                const char* startIndex = state.currIndex;
+
+                while(*state.currIndex != '"' && *state.currIndex != '\0') advance(&state);
+                if(*state.currIndex == '\0') UsmError("at line %d\nunterminated string", state.currLine);
+
+                advance(&state);
+
+                size_t len = state.currIndex - startIndex - 1; // extra 1 from this ^ step
+                char word[len + 1];
+                strncpy(word, startIndex, len);
+                word[len] = '\0';
+
+                emit_token(&tokens, &tokenCount, &state.cap, TOKEN_STRING, &state, word, pool);
+                break;
+            }       
             default: { 
-                if(isalpha(*currentIndex) || *currentIndex == '_') {
-                    char word[32];
-                    int i = 0;
+                if(isalpha(*state.currIndex) || *state.currIndex == '_') {
+                    const char* startIndex = state.currIndex;
     
-                    while((isalnum(*currentIndex) || *currentIndex == '_') && i < 31) {  // prevents the size overflow
-                        word[i] = *currentIndex;
-                        i++;
-                        currentIndex++;
-                    }
-                    word[i] = '\0';
-    
-                    if(*currentIndex == ':') { tokens[tokenCount].type = TOKEN_LABEL; currentIndex++; }
-                    else { tokens[tokenCount].type = get_token_enum(word); }
-    
-                    check_mem(tokens, tokenCount, capacity, Token, "Failed to reallocate memory for tokens array");
-    
-    
-                    strncpy(tokens[tokenCount].value, word, sizeof(tokens[tokenCount].value) - 1);
-                    tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
-                    tokens[tokenCount].line = currentLine;
+                    while((isalnum(*state.currIndex) || *state.currIndex == '_')) advance(&state);
                     
-                    tokenCount++;
-                } else if(isdigit(*currentIndex) || (*currentIndex == '-' && isdigit(*(currentIndex + 1)))) {
-                    char num[32] = "";
-                    uint8_t i = 0;
-                    if(*currentIndex == '-') { num[i] = *currentIndex; currentIndex++; i++; }
+                    size_t len = state.currIndex - startIndex;
+                    char word[len + 1]; // <-- not good
+                    strncpy(word, startIndex, len);
+                    word[len] = '\0';
+
+                    TokenType tokentype = (*state.currIndex == ':') ? TOKEN_LABEL : get_token_enum(word);
+                    if(tokentype == TOKEN_LABEL) advance(&state);
     
-                    while(isdigit(*currentIndex) && i < 31) { num[i] = *currentIndex++; i++; }
-                    num[i] = '\0';
+                    emit_token(&tokens, &tokenCount, &state.cap, tokentype, &state, word, pool);
+                } else if(isdigit(*state.currIndex) || (*state.currIndex == '-' && isdigit(*(state.currIndex + 1)))) {
+                    const char* startIndex = state.currIndex;
                     
-                    check_mem(tokens, tokenCount, capacity, Token, "Failed to reallocate memory for tokens array");
+                    if(*state.currIndex == '-') advance(&state);
     
-                    tokens[tokenCount].type = TOKEN_INT;
-                    strncpy(tokens[tokenCount].value, num, sizeof(tokens[tokenCount].value) - 1);
-                    tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
-                    tokens[tokenCount].line = currentLine;
-    
-                    tokenCount++;
-                } else if(*currentIndex == ',' || *currentIndex == '[' || *currentIndex == ']' || *currentIndex == '&') {
-                    check_mem(tokens, tokenCount, capacity, Token, "Failed to reallocate memory for tokens array");
-    
-                    switch(*currentIndex) {
-                        case ',': tokens[tokenCount].type = TOKEN_COMMA; break;
-                        case '[': tokens[tokenCount].type = TOKEN_L_BRACK; break;
-                        case ']': tokens[tokenCount].type = TOKEN_R_BRACK; break;
-                        case '&': tokens[tokenCount].type = TOKEN_ADDR; break;
-                    }
-                    tokens[tokenCount].value[0] = '\0';
-                    tokens[tokenCount].line = currentLine;
-    
-                    tokenCount++;
-                    currentIndex++;
-                } else if(*currentIndex == '.') {
-                    currentIndex++;
+                    while(isdigit(*state.currIndex)) advance(&state);
+
+                    size_t len = state.currIndex - startIndex;
+                    char word[len + 1];
+                    strncpy(word, startIndex, len);
+                    word[len] = '\0';
                     
-                    char word[32] = "";
-                    uint8_t i = 0;
-
-                    while(isalpha(*currentIndex) && i < 31) { word[i] = *currentIndex++; i++; }
-                    word[i] = '\0';
-
-                    tokens[tokenCount].type = TOKEN_SECTION;
-                    strncpy(tokens[tokenCount].value, word, sizeof(tokens[tokenCount].value) - 1);
-                    tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
-                    tokens[tokenCount].line = currentLine;
-
-                    tokenCount++;
-                } else if(*currentIndex == '"') {
-                    currentIndex++;
-                    
-                    char word[32] = "";
-                    uint8_t i = 0;
-
-                    while(*currentIndex != '"' && *currentIndex != '\0' && i < 31) { word[i] = *currentIndex++; i++; }
-                    if(*currentIndex == '\0') { UsmError("at line %d\nunterminated string", currentLine); }
-                    currentIndex++;
-                    word[i] = '\0';
-
-                    tokens[tokenCount].type = TOKEN_STRING;
-                    strncpy(tokens[tokenCount].value, word, sizeof(tokens[tokenCount].value) - 1);
-                    tokens[tokenCount].value[sizeof(tokens[tokenCount].value) - 1] = '\0';
-                    tokens[tokenCount].line = currentLine;
-                    
-                    tokenCount++;
+                    emit_token(&tokens, &tokenCount, &state.cap, TOKEN_INT, &state, word, pool);
                 } else { 
 
                     // check other hidden char set up sometimes by the code editors
-                    if (isspace((unsigned char)*currentIndex) || iscntrl((unsigned char)*currentIndex)) { currentIndex++; break; }
+                    if (isspace((unsigned char)*state.currIndex) || iscntrl((unsigned char)*state.currIndex)) { state.currIndex++; break; }
                     
-                    UsmError("at line %d\nunknown symbol '%c' (ASCII %d)", currentLine, *currentIndex, (unsigned char)*currentIndex);
+                    UsmError("at line %d\nunknown symbol '%c' (ASCII %d)", state.currLine, *state.currIndex, (unsigned char)*state.currIndex);
                 }
             }
         }
     }
-    check_mem(tokens, tokenCount, capacity, Token, "Failed to reallocate memory for tokens array");
-
-    tokens[tokenCount].type = TOKEN_EOF;
-    tokens[tokenCount].line = currentLine;
-    tokens[tokenCount].value[0] = '\0';
-    tokenCount++;
+    emit_token(&tokens, &tokenCount, &state.cap, TOKEN_EOF, &state, "", pool);
 
     if(outTokenCount) *outTokenCount = tokenCount;
     return tokens;
 }
 
-/*
-static inline Token make_token(TokenType tokentype, uint32_t line, char value, Token* tokens)
+static inline void emit_token(Token **tokens, size_t *count, size_t *capacity, 
+                              TokenType type, LexerState *state, const char *value, Pool *pool)
 {
-    //tokens[tokenCount]
+    check_mem(*tokens, *count, *capacity, Token, "Failed to reallocate memory for tokens array");
+    
+    (*tokens)[*count].type = type;
+    (*tokens)[*count].line = state->currLine;
+    (*tokens)[*count].col = state->currCol;
+    (*tokens)[*count].strId = pool_intern(pool, value ? value : "");
+    (*count)++;
 }
-*/
+
+static inline void advance(LexerState* state)
+{
+    if(*state->currIndex == '\n') { state->currLine++; state->currCol = 1; }
+    else { state->currCol++; }
+    state->currIndex++;
+}
+
+/*
+    TODO:
+     - fix the word buffer overflaw (lazy to do it now) and chnage name word -> wordBuff
+     - add more docementing to the lexer code
+    DONE:
+     - added string pool (pool.h)
+     - refactored the code
+ */
