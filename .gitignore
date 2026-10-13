@@ -11,3 +11,4 @@ test.usm
 *.asm
 *.s
 *.o
+*.obj
